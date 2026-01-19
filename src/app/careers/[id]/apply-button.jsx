@@ -11,6 +11,9 @@ export default function ApplyButton({ jobId, jobTitle }) {
     const [applied, setApplied] = useState(false);
     const router = useRouter();
 
+    const isAppliedToThis = session?.user?.jobPostId === jobId;
+    const hasActiveApplication = session?.user?.jobPostId && !isAppliedToThis;
+
     const handleApply = async () => {
         setApplying(true);
         try {
@@ -23,9 +26,16 @@ export default function ApplyButton({ jobId, jobTitle }) {
                 })
             });
 
+            const data = await res.json();
+
             if (res.ok) {
                 setApplied(true);
                 router.refresh();
+                // Force reload/sign-in to update session with new jobPostId? 
+                // Alternatively, just rely on UI state for now.
+                window.location.href = "/dashboard"; // Redirect to dashboard to take exam
+            } else {
+                alert(data.error || "Failed to apply");
             }
         } catch (e) {
             console.error(e);
@@ -40,14 +50,28 @@ export default function ApplyButton({ jobId, jobTitle }) {
     // but for this interaction, local state + session check is a good start.
 
     if (session) {
-        if (applied) {
+        if (applied || isAppliedToThis) {
             return (
                 <div className="flex flex-col gap-2 w-full">
                     <div className="p-3 bg-green-100 text-green-700 rounded-lg text-center font-bold">
-                        Application Submitted!
+                        Already Applied
                     </div>
-                    {/* Optional: Link to exam immediately */}
-                    {/* <Link href="/exam" className="...">Take Assessment</Link> */}
+                    <Link href="/dashboard" className="block w-full px-8 py-3 bg-primary text-white font-bold rounded-lg text-center shadow hover:bg-blue-700 transition">
+                        Go to Dashboard
+                    </Link>
+                </div>
+            )
+        }
+
+        if (hasActiveApplication) {
+            return (
+                <div className="flex flex-col gap-2 w-full">
+                    <div className="p-3 bg-amber-100 text-amber-800 rounded-lg text-center text-sm font-medium">
+                        You have another active application.
+                    </div>
+                    <Link href="/dashboard" className="block w-full px-6 py-3 bg-white border border-gray-200 text-gray-700 font-bold rounded-lg text-center hover:bg-gray-50 transition">
+                        Check Status
+                    </Link>
                 </div>
             )
         }

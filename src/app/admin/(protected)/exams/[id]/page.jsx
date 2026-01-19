@@ -9,13 +9,14 @@ import { revalidatePath } from "next/cache";
 
 export const dynamic = 'force-dynamic';
 
-async function updateStatus(userId, status) {
+async function updateStatus(userId, status, examId) {
     "use server";
     await prisma.user.update({
         where: { id: userId },
         data: { examStatus: status }
     });
-    revalidatePath(`/admin/exams/${examId}`);
+    // Add revalidatePath if needed, or rely on client router.refresh
+    if (examId) revalidatePath(`/admin/exams/${examId}`);
 }
 
 export default async function ExamDetails({ params }) {

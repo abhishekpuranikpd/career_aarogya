@@ -17,6 +17,24 @@ export async function POST(req) {
       return NextResponse.json({ error: "Job ID required" }, { status: 400 });
     }
 
+    // Check if already applied to THIS job
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { jobPostId: true, responses: true } 
+    });
+
+    if (user.jobPostId === jobPostId) {
+       return NextResponse.json({ error: "You have already applied for this position." }, { status: 409 });
+    }
+
+    // Optional: Check if already applied to ANY job? The schema limits to one active jobPostId.
+    // Use `if (user.jobPostId)` to restrict to single active application.
+    if (user.jobPostId) {
+        // If they want to switch jobs, maybe allow it? 
+        // But user said "cant reapply again". Let's assume strict "One Active Application".
+        return NextResponse.json({ error: "You already have an active application. Please check your dashboard." }, { status: 409 });
+    }
+
     // Update user with new job application
     // Note: detailed schema might want a separate Applications table, but adhering to current schema:
     const updatedUser = await prisma.user.update({

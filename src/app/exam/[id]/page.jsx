@@ -31,6 +31,8 @@ export default function ExamSession({ params }) {
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [completed, setCompleted] = useState(false);
+    const [termsAccepted, setTermsAccepted] = useState(false);
+    const [agreed, setAgreed] = useState(false);
 
     useEffect(() => {
         const fetchExam = async () => {
@@ -101,7 +103,10 @@ export default function ExamSession({ params }) {
 
     if (loading) return <div className="p-12 text-center text-gray-500">Loading assessment...</div>;
 
+
+
     if (completed) {
+        // ... (keep existing completed view)
         return (
             <div className="min-h-[60vh] flex flex-col items-center justify-center p-4 text-center">
                 <CheckCircleIcon className="w-20 h-20 text-green-500 mb-6" />
@@ -117,8 +122,86 @@ export default function ExamSession({ params }) {
         );
     }
 
+    if (!termsAccepted) {
+        return (
+            <div className="min-h-screen bg-gray-50 py-12 px-4 flex items-center justify-center">
+                <div className="bg-white max-w-2xl w-full rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+                    <div className="bg-primary px-8 py-6 text-white text-center">
+                        <h2 className="text-2xl font-bold">Candidate Agreement</h2>
+                        <p className="text-blue-100 text-sm mt-1">Please review and accept the terms to proceed.</p>
+                    </div>
+                    <div className="p-8 h-[60vh] overflow-y-auto custom-scrollbar space-y-6">
+                        {/* Privacy & Terms Summary */}
+                        <section>
+                            <h3 className="font-bold text-gray-900 mb-2">1. Privacy & Terms</h3>
+                            <p className="text-sm text-gray-600 leading-relaxed">
+                                By proceeding, you agree to our <a href="/legal" target="_blank" className="text-primary underline">Privacy Policy and Terms of Service</a>.
+                                We collect your responses solely for recruitment purposes. Your data is handled securely and is not shared with unauthorized third parties.
+                            </p>
+                        </section>
+
+                        {/* NDA Section */}
+                        <section className="bg-amber-50 p-5 rounded-lg border border-amber-100">
+                            <h3 className="font-bold text-amber-900 mb-2 flex items-center gap-2">
+                                <span className="p-1 bg-amber-200 rounded text-xs">CRITICAL</span>
+                                Non-Disclosure Agreement (NDA)
+                            </h3>
+                            <div className="text-sm text-amber-800 space-y-3 leading-relaxed">
+                                <p>You acknowledge that the assessment content (questions, scenarios, technical challenges) is <strong>confidential property</strong> of Aarogya Aadhar.</p>
+                                <p><strong>You Agree To:</strong></p>
+                                <ul className="list-disc pl-5 space-y-1">
+                                    <li>NOT copy, screenshot, or record any part of this exam.</li>
+                                    <li>NOT share questions or answers on social media, GitHub, forums, or with other candidates.</li>
+                                    <li>NOT use AI assistants (ChatGPT, Gemini, etc.) to generate answers.</li>
+                                </ul>
+                                <p className="font-bold mt-2">Violation of these terms will result in immediate disqualification and potential legal action.</p>
+                            </div>
+                        </section>
+
+                        <section>
+                            <h3 className="font-bold text-gray-900 mb-2">2. Exam Rules</h3>
+                            <ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
+                                <li>Ensure you have a stable internet connection.</li>
+                                <li>Do not refresh the page once started.</li>
+                                <li>All answers must be your own original work.</li>
+                            </ul>
+                        </section>
+                    </div>
+                    <div className="p-6 border-t border-gray-100 bg-gray-50 flex flex-col items-center gap-4">
+                        <label className="flex items-start gap-3 cursor-pointer group">
+                            <div className="relative flex items-center">
+                                <input
+                                    type="checkbox"
+                                    className="peer h-5 w-5 cursor-pointer appearance-none rounded border border-gray-300 shadow-sm checked:border-primary checked:bg-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                                    id="accept-terms"
+                                    checked={agreed}
+                                    onChange={(e) => setAgreed(e.target.checked)}
+                                />
+                                <svg className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 opacity-0 peer-checked:opacity-100 text-white transition-opacity" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                    <path fillRule="evenodd" d="M19.916 4.626a.75.75 0 01.208 1.04l-9 13.5a.75.75 0 01-1.154.114l-6-6a.75.75 0 011.06-1.06l5.353 5.353 8.493-12.739a.75.75 0 011.04-.208z" clipRule="evenodd" />
+                                </svg>
+                            </div>
+                            <span className="text-sm text-gray-600 select-none group-hover:text-gray-900 transition-colors">
+                                I have read and agree to the <span className="font-bold text-gray-900">Privacy Policy, Terms, and NDA</span>. I understand that using AI or sharing questions will lead to rejection.
+                            </span>
+                        </label>
+                        <button
+                            id="start-btn"
+                            disabled={!agreed}
+                            onClick={() => setTermsAccepted(true)}
+                            className="w-full py-4 bg-primary text-white rounded-xl font-bold text-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl disabled:shadow-none"
+                        >
+                            Start Assessment
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen bg-gray-50 py-12 px-4">
+            {/* ... existing exam render code ... */}
             <div className="container mx-auto max-w-3xl">
                 <div className="mb-10 text-center flex flex-col items-center relative print:mb-4">
                     {/* Print Button - Hidden on Print */}
@@ -237,14 +320,22 @@ export default function ExamSession({ params }) {
                                     </div>
                                 ) : (
                                     <>
-                                        {/* Screen Version: Textarea */}
-                                        <textarea
-                                            className="w-full p-6 bg-gray-50 rounded-xl border border-gray-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all min-h-[180px] text-gray-800 placeholder:text-gray-400 font-medium leading-relaxed resize-y spell-check-false print:hidden"
-                                            placeholder="Type your detailed answer here..."
-                                            onChange={(e) => handleAnswer(q.id, e.target.value)}
-                                            value={answers[q.id] || ''}
-                                            spellCheck="false"
-                                        ></textarea>
+                                        <div className="relative">
+                                            <textarea
+                                                className={`w-full p-6 bg-gray-50 rounded-xl border focus:ring-4 outline-none transition-all min-h-[180px] text-gray-800 placeholder:text-gray-400 font-medium leading-relaxed resize-y spell-check-false print:hidden
+                                                    ${(answers[q.id]?.trim().split(/\s+/).filter(w => w.length > 0).length || 0) > 100
+                                                        ? 'border-red-300 focus:border-red-500 focus:ring-red-500/10'
+                                                        : 'border-gray-200 focus:border-primary focus:ring-primary/10'}`}
+                                                placeholder="Type your detailed answer here... (Max 100 words)"
+                                                onChange={(e) => handleAnswer(q.id, e.target.value)}
+                                                value={answers[q.id] || ''}
+                                                spellCheck="false"
+                                            ></textarea>
+                                            <div className={`absolute bottom-4 right-4 text-xs font-bold print:hidden pointer-events-none transition-colors
+                                                ${(answers[q.id]?.trim().split(/\s+/).filter(w => w.length > 0).length || 0) > 100 ? 'text-red-500' : 'text-gray-400'}`}>
+                                                {answers[q.id]?.trim().split(/\s+/).filter(w => w.length > 0).length || 0} / 100 words
+                                            </div>
+                                        </div>
 
                                         {/* Print Version: Ruled Lines */}
                                         <div className="hidden print:block w-full mt-4 space-y-8">
