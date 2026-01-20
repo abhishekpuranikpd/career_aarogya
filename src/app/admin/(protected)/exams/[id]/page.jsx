@@ -6,6 +6,7 @@ import Link from "next/link"
 import { ArrowLeftIcon } from "@heroicons/react/24/outline"
 import ApplicantsTable from "./ApplicantsTable";
 import { revalidatePath } from "next/cache";
+import ExamSettings from "./ExamSettings";
 
 export const dynamic = 'force-dynamic';
 
@@ -54,7 +55,23 @@ export default async function ExamDetails({ params }) {
                     </div>
                 </div>
 
-                <h2 className="text-xl font-bold mb-4 text-gray-700">Applicants ({exam.responses.length})</h2>
+                {/* Exam Settings (Time Window) */}
+                <ExamSettings exam={exam} />
+
+                <div className="flex justify-between items-end mb-4">
+                    <h2 className="text-xl font-bold text-gray-700">Applicants ({exam.responses.length})</h2>
+
+                    <a
+                        href={`/api/admin/exams/${exam.id}/export`}
+                        target="_blank"
+                        className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition shadow-sm"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        Export CSV
+                    </a>
+                </div>
                 <ApplicantsTable
                     responses={exam.responses}
                     updateStatusServerAction={updateStatus}

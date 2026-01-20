@@ -38,26 +38,12 @@ export default async function ApplicantDetails({ params }) {
                 include: {
                     exam: true
                 },
-                orderBy: { submittedAt: 'desc' },
-                take: 1
+                orderBy: { submittedAt: 'desc' }
             }
         }
     });
 
     if (!user) notFound();
-
-    const response = user.responses[0];
-    const exam = user.jobPost?.exam; // The exam they SHOULD have taken
-
-    // Parse answers if they exist
-    let answers = {};
-    if (response && response.answers) {
-        if (typeof response.answers === 'string') {
-            try { answers = JSON.parse(response.answers); } catch (e) { }
-        } else {
-            answers = response.answers;
-        }
-    }
 
     return (
         <div className="min-h-screen bg-gray-50 p-8">
@@ -75,16 +61,9 @@ export default async function ApplicantDetails({ params }) {
                                 <span className="flex items-center gap-2"><EnvelopeIcon className="w-4 h-4" /> {user.email}</span>
                                 {user.mobile && <span className="flex items-center gap-2"><PhoneIcon className="w-4 h-4" /> {user.mobile}</span>}
                             </div>
-                            <div className="mt-4 flex gap-3">
+                            <div className="mt-4">
                                 <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm font-bold border border-blue-100">
-                                    Applied for: {user.positionApplied || user.jobPost?.title || "General"}
-                                </span>
-                                <span className={`px-3 py-1 rounded-full text-sm font-bold border ${user.examStatus === 'PASSED' ? 'bg-green-50 text-green-700 border-green-100' :
-                                        user.examStatus === 'FAILED' ? 'bg-red-50 text-red-700 border-red-100' :
-                                            user.examStatus === 'HIRED' ? 'bg-blue-50 text-blue-700 border-blue-100' :
-                                                'bg-yellow-50 text-yellow-700 border-yellow-100'
-                                    }`}>
-                                    Status: {user.examStatus}
+                                    History: {user.responses.length} Assessment(s) Taken
                                 </span>
                             </div>
                         </div>
@@ -101,62 +80,92 @@ export default async function ApplicantDetails({ params }) {
                     </div>
                 </div>
 
-                {/* Assessment Section */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                    <div className="p-6 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-                        <h2 className="text-xl font-bold text-gray-900">Assessment Result</h2>
-                        {response && (
-                            <span className="text-sm text-gray-500">
-                                Submitted: {new Date(response.submittedAt).toLocaleString()}
-                            </span>
-                        )}
+                <h2 className="text-xl font-bold text-gray-900 mb-6">Assessment History</h2>
+
+                {user.responses.length === 0 ? (
+                    <div className="bg-white p-12 text-center rounded-xl shadow-sm border border-gray-200">
+                        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
+                            <DocumentTextIcon className="w-8 h-8" />
+                        </div>
+                        <h3 className="text-lg font-bold text-gray-900">No Assessment History</h3>
+                        <p className="text-gray-500">This candidate has not completed any assessments yet.</p>
                     </div>
+                ) : (
+                    <div className="space-y-8">
+                        {user.responses.map((response, rIndex) => {
+                            const exam = response.exam;
 
-                    <div className="p-8">
-                        {!exam ? (
-                            <div className="text-center py-8 text-gray-500">No exam linked to this application.</div>
-                        ) : !response ? (
-                            <div className="text-center py-12">
-                                <div className="w-16 h-16 bg-yellow-50 rounded-full flex items-center justify-center mx-auto mb-4 text-yellow-500">
-                                    <DocumentTextIcon className="w-8 h-8" />
-                                </div>
-                                <h3 className="text-lg font-bold text-gray-900">Not Attempted</h3>
-                                <p className="text-gray-500">The candidate has not completed the assessment yet.</p>
-                            </div>
-                        ) : (
-                            <div className="space-y-8">
-                                {/* Score Summary (Optional, if you had auto-grading) */}
-                                {/* <div className="p-4 bg-gray-50 rounded-lg">Score: {response.score}</div> */}
+                            // Parse answers
+                            let answers = {};
+                            if (response.answers) {
+                                answers = typeof response.answers === 'string' ? JSON.parse(response.answers) : response.answers;
+                            }
 
-                                {exam.questions.map((q, index) => {
-                                    const userAnswer = answers[q.id];
-                                    // If it's yes/no, we can crudely check correctness if correctAnswer is stored
-                                    // For Writing, it's subjective.
-
-                                    return (
-                                        <div key={q.id} className="border-b last:border-0 pb-8 last:pb-0">
-                                            <p className="font-medium text-gray-500 text-sm mb-2">Question {index + 1}</p>
-                                            <h3 className="text-lg font-bold text-gray-900 mb-4">{q.text}</h3>
-
-                                            <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
-                                                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Candidate's Answer</p>
-                                                <p className="text-gray-800 whitespace-pre-wrap">{userAnswer || <span className="text-gray-400 italic">No answer provided</span>}</p>
-                                            </div>
-
-                                            {q.correctAnswer && (
-                                                <div className="mt-2 text-sm text-green-700 flex items-center gap-2">
-                                                    <CheckCircleIcon className="w-4 h-4" />
-                                                    Correct Answer: {q.correctAnswer}
-                                                </div>
-                                            )}
+                            return (
+                                <div key={response.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                                    <div className="bg-gray-50 p-6 border-b border-gray-100 flex justify-between items-center flex-wrap gap-4">
+                                        <div>
+                                            <h3 className="text-lg font-bold text-gray-900">{exam?.title || "Unknown Exam"}</h3>
+                                            <p className="text-sm text-gray-500">
+                                                Submitted: {new Date(response.submittedAt).toLocaleDateString()} at {new Date(response.submittedAt).toLocaleTimeString()}
+                                            </p>
                                         </div>
-                                    );
-                                })}
-                            </div>
-                        )}
-                    </div>
-                </div>
+                                        <div className="text-sm px-3 py-1 bg-white border rounded font-mono">
+                                            ID: {response.id.slice(-6)}
+                                        </div>
+                                    </div>
 
+                                    <div className="p-8 space-y-8">
+                                        {!exam ? (
+                                            <p className="text-red-500">Exam details no longer exist.</p>
+                                        ) : (
+                                            exam.questions.map((q, index) => {
+                                                const rawAnswer = answers[q.id];
+                                                let displayValue = "";
+                                                let explanation = "";
+                                                let detail = "";
+
+                                                if (typeof rawAnswer === 'object' && rawAnswer !== null) {
+                                                    displayValue = rawAnswer.value;
+                                                    explanation = rawAnswer.explanation;
+                                                    detail = rawAnswer.detail;
+                                                } else {
+                                                    displayValue = rawAnswer;
+                                                }
+
+                                                return (
+                                                    <div key={q.id} className="border-b last:border-0 pb-8 last:pb-0">
+                                                        <p className="font-medium text-gray-500 text-sm mb-2">Question {index + 1}</p>
+                                                        <h4 className="text-gray-900 font-bold mb-4">{q.text}</h4>
+
+                                                        <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 space-y-3">
+                                                            <div>
+                                                                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Answer</p>
+                                                                <p className="text-gray-900 font-medium whitespace-pre-wrap">{displayValue || <span className="text-gray-400 italic">No answer provided</span>}</p>
+                                                            </div>
+                                                            {detail && (
+                                                                <div className="pt-2 border-t border-gray-200">
+                                                                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Details</p>
+                                                                    <p className="text-gray-800">{detail}</p>
+                                                                </div>
+                                                            )}
+                                                            {explanation && (
+                                                                <div className="pt-2 border-t border-gray-200">
+                                                                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Explanation</p>
+                                                                    <p className="text-gray-800 italic">"{explanation}"</p>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
         </div>
     );

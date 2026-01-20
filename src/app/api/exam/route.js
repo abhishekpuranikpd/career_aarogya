@@ -15,18 +15,21 @@ export async function POST(req) {
   // For now, implementing the creation logic.
   try {
     const body = await req.json();
-    const { title, type, questions } = body;
+    const { title, type, questions, windowStart, windowEnd } = body;
     
     const exam = await prisma.exam.create({
       data: {
         title,
         type, 
-        questions
+        questions,
+        windowStart: windowStart ? new Date(windowStart) : null,
+        windowEnd: windowEnd ? new Date(windowEnd) : null
       }
     });
 
     return NextResponse.json(exam);
   } catch (error) {
-    return NextResponse.json({ error: 'Error creating exam' }, { status: 500 });
+    console.error("EXAM CREATE ERROR:", error);
+    return NextResponse.json({ error: 'Error creating exam', details: error.message }, { status: 500 });
   }
 }

@@ -28,12 +28,16 @@ export default function ExamSession({ params }) {
 
     const [questions, setQuestions] = useState([]);
     const [answers, setAnswers] = useState({});
+    const [examMetadata, setExamMetadata] = useState(null);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [completed, setCompleted] = useState(false);
     const [termsAccepted, setTermsAccepted] = useState(false);
     const [agreed, setAgreed] = useState(false);
+    const [expandNDA, setExpandNDA] = useState(false);
+    const [securityWarning, setSecurityWarning] = useState(false);
 
+    // Data Fetching and Answer Initialization (Restored)
     useEffect(() => {
         const fetchExam = async () => {
             try {
@@ -41,6 +45,10 @@ export default function ExamSession({ params }) {
                 const res = await fetch(`/api/exam/${examId}`);
                 if (res.ok) {
                     const data = await res.json();
+
+                    // Save metadata (timings, title, etc)
+                    setExamMetadata(data);
+
                     // The API returns { id, title, questions, completed, ... }
                     if (data.completed) {
                         setCompleted(true);
@@ -63,7 +71,6 @@ export default function ExamSession({ params }) {
                 setQuestions(DEMO_QUESTIONS[examId]);
             } else {
                 // Default fallback if nothing found (e.g. for creating new UI flow before backend ready)
-                // ideally show error, but keeping empty for now
             }
             setLoading(false);
         };
@@ -73,40 +80,184 @@ export default function ExamSession({ params }) {
         }
     }, [examId]);
 
-    const handleAnswer = (qId, value) => {
-        setAnswers(prev => ({ ...prev, [qId]: value }));
+    // Initialize answers structure when questions load
+    useEffect(() => {
+        if (questions && questions.length > 0) {
+            const initialAnswers = {};
+            questions.forEach(q => {
+                initialAnswers[q.id] = { value: '', explanation: '', detail: '' };
+            });
+            // Only set if empty to avoid wiping state on re-renders if any
+            setAnswers(prev => Object.keys(prev).length === 0 ? initialAnswers : prev);
+        }
+    }, [questions]);
+
+    // SECURITY: Prevent Copy/Paste/Right-Click
+    useEffect(() => {
+        const handlePrevent = (e) => {
+            e.preventDefault();
+            return false;
+        };
+
+        const handleSecurityViolation = () => {
+            if (completed) return; // Don't warn if already finished
+            if (!termsAccepted) return; // Don't warn before starting
+            setSecurityWarning(true);
+        };
+
+        if (termsAccepted && !completed) {
+            document.addEventListener('contextmenu', handlePrevent);
+            document.addEventListener('copy', handlePrevent);
+            document.addEventListener('cut', handlePrevent);
+            document.addEventListener('paste', handlePrevent);
+
+            // Window/Tab switching detection
+            window.addEventListener('blur', handleSecurityViolation);
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) handleSecurityViolation();
+            });
+        }
+
+        return () => {
+            document.removeEventListener('contextmenu', handlePrevent);
+            document.removeEventListener('copy', handlePrevent);
+            document.removeEventListener('cut', handlePrevent);
+            document.removeEventListener('paste', handlePrevent);
+            window.removeEventListener('blur', handleSecurityViolation);
+        };
+    }, [termsAccepted, completed]);
+
+    const handleAnswer = (qId, updates) => {
+        setAnswers(prev => ({
+            ...prev,
+            [qId]: { ...prev[qId], ...updates }
+        }));
     };
 
     const handleSubmit = async () => {
+        // Validation: Check for missing answers
+        const missing = questions.filter(q => {
+            const ans = answers[q.id];
+            // 1. Check main value
+            if (!ans || !ans.value || (typeof ans.value === 'string' && !ans.value.trim())) return true;
+
+            // 2. Check conditional inputs (Bachelor/Other details)
+            if (q.type === 'RADIO_WITH_INPUT') {
+                if ((ans.value === 'Other' || ans.value === 'Bachelor Degree') && (!ans.detail || !ans.detail.trim())) {
+                    return true;
+                }
+            }
+
+            // 3. Check Explanations
+            if (q.requiresExplanation && ans.value === 'Yes') {
+                if (!ans.explanation || !ans.explanation.trim()) return true;
+
+                // MIN WORD COUNT CHECK
+                const wordCount = (ans.explanation || '').trim().split(/\s+/).filter(w => w.length > 0).length;
+                const minWords = Math.floor((q.wordLimit || 100) / 2);
+                if (wordCount < minWords) {
+                    alert(`Question ${questions.indexOf(q) + 1} requires at least ${minWords} words for the explanation.`);
+                    return true;
+                }
+            }
+
+            // 4. Check Text Area Min Word Count
+            if (q.type === 'TEXT') {
+                const wordCount = (ans.value || '').trim().split(/\s+/).filter(w => w.length > 0).length;
+                const minWords = Math.floor((q.wordLimit || 200) / 2);
+                if (wordCount < minWords) {
+                    alert(`Question ${questions.indexOf(q) + 1} requires at least ${minWords} words.`);
+                    return true;
+                }
+            }
+
+            return false;
+        });
+
+        if (missing.length > 0) {
+            // alert is handled inside the filter for specific messages, or generic here
+            // Note: filter stops at first true, so alerts might be spammy if we did it inside. 
+            // Better approach: find first error and alert.
+            // Retaining generic alert as fallback if needed, but the inner alerts are better.
+            return;
+        }
+
         setSubmitting(true);
 
-        // Simulate network delay for submission
-        setTimeout(async () => {
-            try {
-                await fetch("/api/exam/submit", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        examId,
-                        answers
-                        // In a real app, include userId or session token
-                    })
-                });
-            } catch (e) {
-                console.error(e);
+        try {
+            const res = await fetch("/api/exam/submit", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    examId,
+                    answers
+                })
+            });
+
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error || "Submission failed");
             }
 
             setCompleted(true);
+        } catch (e) {
+            console.error(e);
+            alert("Failed to submit exam: " + e.message);
+        } finally {
             setSubmitting(false);
-        }, 1500);
+        }
     };
 
     if (loading) return <div className="p-12 text-center text-gray-500">Loading assessment...</div>;
 
+    // Check Time Window
+    if (examMetadata) {
+        const now = new Date();
+        const start = examMetadata.windowStart ? new Date(examMetadata.windowStart) : null;
+        const end = examMetadata.windowEnd ? new Date(examMetadata.windowEnd) : null;
 
+        if (start && now < start) {
+            return (
+                <div className="min-h-screen flex flex-col items-center justify-center p-8 bg-gray-50 text-center">
+                    <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full border border-gray-100">
+                        <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-8 h-8">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <h2 className="text-2xl font-bold text-gray-900 mb-2">Assessment Not Started</h2>
+                        <p className="text-gray-500 mb-6">This assessment is scheduled to start on:</p>
+                        <div className="bg-blue-50 p-4 rounded-xl text-blue-900 font-bold text-lg mb-6">
+                            {start.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
+                        </div>
+                        <p className="text-sm text-gray-400">Please come back at the scheduled time.</p>
+                    </div>
+                </div>
+            );
+        }
+
+        if (end && now > end) {
+            return (
+                <div className="min-h-screen flex flex-col items-center justify-center p-8 bg-gray-50 text-center">
+                    <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full border border-gray-100">
+                        <div className="w-16 h-16 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-8 h-8">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                            </svg>
+                        </div>
+                        <h2 className="text-2xl font-bold text-gray-900 mb-2">Assessment Expired</h2>
+                        <p className="text-gray-500 mb-6">The window for this assessment has closed on:</p>
+                        <div className="bg-red-50 p-4 rounded-xl text-red-900 font-bold text-lg mb-6">
+                            {end.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
+                        </div>
+                        <p className="text-sm text-gray-400">If you believe this is an error, please contact HR.</p>
+                    </div>
+                </div>
+            );
+        }
+    }
 
     if (completed) {
-        // ... (keep existing completed view)
         return (
             <div className="min-h-[60vh] flex flex-col items-center justify-center p-4 text-center">
                 <CheckCircleIcon className="w-20 h-20 text-green-500 mb-6" />
@@ -146,16 +297,119 @@ export default function ExamSession({ params }) {
                                 <span className="p-1 bg-amber-200 rounded text-xs">CRITICAL</span>
                                 Non-Disclosure Agreement (NDA)
                             </h3>
-                            <div className="text-sm text-amber-800 space-y-3 leading-relaxed">
-                                <p>You acknowledge that the assessment content (questions, scenarios, technical challenges) is <strong>confidential property</strong> of Aarogya Aadhar.</p>
-                                <p><strong>You Agree To:</strong></p>
-                                <ul className="list-disc pl-5 space-y-1">
-                                    <li>NOT copy, screenshot, or record any part of this exam.</li>
-                                    <li>NOT share questions or answers on social media, GitHub, forums, or with other candidates.</li>
-                                    <li>NOT use AI assistants (ChatGPT, Gemini, etc.) to generate answers.</li>
-                                </ul>
-                                <p className="font-bold mt-2">Violation of these terms will result in immediate disqualification and potential legal action.</p>
+                            <p className="text-xs text-amber-700/70 mb-3">Effective Date: {new Date().toLocaleDateString()}</p>
+
+                            <div className={`text-sm text-amber-900 space-y-3 leading-relaxed transition-all ${expandNDA ? '' : 'max-h-40 overflow-hidden relative'}`}>
+                                <p><strong>BETWEEN:</strong> Livo AarogyaAadhar Private Limited ("The Company") AND You ("The Candidate/Employee").</p>
+
+                                <p><strong>1. Confidential Information:</strong> You agree that all information shared by the Company (financials, strategies, products, code, data, customer lists, IP) is strictly confidential property.</p>
+
+                                <p><strong>2. Obligations:</strong> You shall NOT disclose, copy, record, or misuse any Confidential Information. You shall not use AI tools (ChatGPT, etc.) to generate answers or share exam content.</p>
+
+                                {expandNDA && (
+                                    <div className="mt-4 space-y-4 text-xs text-amber-900/90 border-t border-amber-200 pt-4">
+                                        <h4 className="font-bold text-center text-sm">NON-DISCLOSURE AND CONFIDENTIALITY AGREEMENT</h4>
+                                        <p>This Non-Disclosure Agreement (hereinafter referred to as the “Agreement”) is made and executed on this <strong>{new Date().toLocaleDateString()}</strong> (hereinafter the “Effective Date”).</p>
+
+                                        <p><strong>BETWEEN</strong><br />
+                                            Livo AarogyaAadhar Private Limited, CIN: U86201PN2023PTC219864, a Company registered under the Companies Act 2013, having its registered office at – Aarogya Aadhar Office Address: Kisan Bhavan, Aarogya Aadhar Patient War Room, Opp to Bank of Baroda, Range Hill Road, Yashwant Nagar, Pune - 411053, Maharashtra, India, through its Founder & Managing Director Dr Shubham (DIN:10129766)<br />
+                                            …Hereinafter referred to as the “Livo AarogyaAadhar Private Limited” (Which expression shall unless repugnant to the context thereof shall be deemed to mean and include its heirs, executors, successors, administrators and assignees)</p>
+
+                                        <p><strong>AND</strong><br />
+                                            The Candidate/Employee/Shareholder/Co-Founder (You)<br />
+                                            ….... Hereinafter referred to as the “Employee/Shareholder/Co-Founder” (Which expression shall unless repugnant to the context thereof shall be deemed to mean and include its heirs, executors, successors, administrators and assigns. Any individual not limited to Employee/Shareholder/Co- Founder, consultant, vendor, vendor staff, associate will be termed as “Employee/Shareholder/Co- Founder”)</p>
+
+                                        <p>The parties shall be individually referred to as “Party” and collectively as “Parties”.</p>
+
+                                        <div className="pl-4 border-l-2 border-amber-200">
+                                            <p className="font-bold">RECITALS</p>
+                                            <ul className="list-[upper-alpha] list-inside space-y-1">
+                                                <li>Whereas, the Company is a Company incorporated under The Companies Act, 2013 and is engaged in the business of Healthcare service provider</li>
+                                                <li>Whereas, the Company possessed all the Technology, Patents, Trade Secrets, Confidential Information, Confidential Material, Know-How and other Proprietary Information regarding the Said Services.</li>
+                                                <li>Whereas, the Company has applied for various Patents and Trade Marks which are under process at present; Company hereby declares that the Company possess all the Patents, Trade Secrets, Confidential Information, Confidential Material, Know-How and other Proprietary Information regarding the Said Services.</li>
+                                                <li>Whereas, the Employee/Shareholder/Co-Founder is employed by the Company or hired as consultant or vendor, the Employee/Shareholder/Co-Founder acknowledges that in the course of employment he may have access to or have disclosed to him certain information of a confidential nature by the Company.</li>
+                                                <li>Whereas, the Company is desirous of setting forth the obligations on the Employee/Shareholder/Co-Founder with respect to such Confidential Information.</li>
+                                                <li>Whereas, the unauthorized disclosure or use by the Employee/Shareholder/Co-Founder of such Confidential Information, Confidential Material, Know-How, Trade Secret and other proprietary information of the Company could expose the Company to irreparable harm in monetary terms as well as in reputation and goodwill.</li>
+                                            </ul>
+                                        </div>
+
+                                        <p>The Company hired the Employee/Shareholder/Co-Founder as Freelance consultant pursuant to the terms and conditions of that certain Employment Agreement executed between the Parties. In connection with the duties under the Employment Agreement, the Company may disclose to the Employee/Shareholder/Co-Founder certain confidential and proprietary information unique and valuable to its ongoing business operations. In consideration of the employment by the Company and the covenants and mutual promises contained herein, the parties agree as follows:</p>
+
+                                        <h5 className="font-bold">1. Confidential Information</h5>
+                                        <p>Confidential information is:</p>
+                                        <ul className="list-disc list-inside pl-2">
+                                            <li>
+                                                <strong>All information shared by the Company.</strong> "Confidential Information" shall mean (i) all information relating to the Company’s products, business and operations including, but not limited to, financial documents and plans, customers, suppliers, manufacturing partners, marketing strategies, all proprietary concepts... source code, software, algorithms, data... whether in oral, tangible, electronic or other form; (ii) the terms of any agreement... (iii) information acquired during any tours of the Company’s facilities; and (iv) all other non-public information.
+                                            </li>
+                                            <li>
+                                                <strong>Specific information</strong> including 'Accounting Information', 'Business Operations', 'Computer Technology', 'Customer Information', 'Intellectual Property', 'Marketing and Sales Information', 'Proprietary Rights', 'Procedures and Specifications', 'Product Information', 'Service Information', and 'Software Information'.
+                                            </li>
+                                        </ul>
+
+
+                                        <h5 className="font-bold">2. Exclusions from Confidential Information.</h5>
+                                        <p>The obligation of confidentiality will not apply if: (a) information becomes publicly known through no fault of yours; (b) received from a third party without breach; (c) disclosed with Company's written permission; (d) independently developed; or (e) legally compelled to disclose (with prior notice).</p>
+
+                                        <h5 className="font-bold">3. Obligation to Maintain Confidentiality.</h5>
+                                        <p>You agree to retain Confidential Information in strict confidence and not to disclose it except as permitted. This obligation survives termination.</p>
+
+                                        <h5 className="font-bold">4. Non-Compete.</h5>
+                                        <p>You agree not to engage in any business activity competitive with the Company during the relationship and for <strong>24 months</strong> post-termination.</p>
+
+                                        <h5 className="font-bold">5. Non-Solicitation.</h5>
+                                        <p>You agree not to solicit any Employee or contractor of the Company during your relationship with the Company.</p>
+
+                                        <h5 className="font-bold">6. Disclaimer.</h5>
+                                        <p>There is no representation or warranty, express or implied, made by the Company as to the accuracy or completeness of any of its Confidential Information.</p>
+
+                                        <h5 className="font-bold">7. Remedies.</h5>
+                                        <p>You acknowledge that breach will cause irreparable injury. The Company is entitled to equitable or injunctive relief and damages (direct and consequential), including attorney’s fees.</p>
+
+                                        <h5 className="font-bold">8. Notices.</h5>
+                                        <p>All notices must be in writing and delivered via recognized methods.</p>
+
+                                        <h5 className="font-bold">9. Termination.</h5>
+                                        <p>This Agreement terminates on: (a) written agreement; or (b) 24 months post cessation of employment.</p>
+
+                                        <h5 className="font-bold">10. Amendment.</h5>
+                                        <p>Amendments must be in writing signed by both parties.</p>
+
+                                        <h5 className="font-bold">11. Jurisdiction.</h5>
+                                        <p>This Agreement will be governed by the <strong>laws of the State of Maharashtra, India</strong>. Exclusive jurisdiction: Courts located in the State of Maharashtra.</p>
+
+                                        <h5 className="font-bold">12. No Offer or Sale.</h5>
+                                        <p>Nothing herein is a sale or offer for sale of Confidential Information.</p>
+
+                                        <h5 className="font-bold">13. Miscellaneous.</h5>
+                                        <p>No joint venture exists. This binding on successors. Assigned requires consent. Invalidity of one provision does not affect others.</p>
+
+                                        <div className="mt-6 border-t border-amber-300 pt-4">
+                                            <p className="font-bold text-center mb-2">IN WITNESS WHEREOF, the parties hereto have executed this Agreement as of the date first written above.</p>
+                                            <div className="grid grid-cols-2 gap-4 text-center">
+                                                <div>
+                                                    <p className="font-bold">Dr Shubham Gadge (Founder & MD)</p>
+                                                    <p className="text-[10px]">Livo AarogyaAadhar Private Limited</p>
+                                                </div>
+                                                <div>
+                                                    <p className="font-bold">Candidate / Employee</p>
+                                                    <p className="text-[10px]">(Digitally Accepted by Checkbox)</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {!expandNDA && (
+                                    <div className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-amber-50 to-transparent pointer-events-none flex items-end justify-center pb-2"></div>
+                                )}
                             </div>
+
+                            <button
+                                onClick={() => setExpandNDA(!expandNDA)}
+                                className="mt-2 text-primary font-bold text-sm hover:underline flex items-center gap-1"
+                            >
+                                {expandNDA ? "Read Less" : "Read Full Agreement"}
+                            </button>
                         </section>
 
                         <section>
@@ -201,7 +455,31 @@ export default function ExamSession({ params }) {
 
     return (
         <div className="min-h-screen bg-gray-50 py-12 px-4">
-            {/* ... existing exam render code ... */}
+            {/* Security Warning Modal */}
+            {securityWarning && (
+                <div className="fixed inset-0 z-50 bg-black bg-opacity-95 flex flex-col items-center justify-center text-center p-8 animate-fadeIn">
+                    <div className="bg-white p-8 rounded-2xl max-w-lg w-full shadow-2xl">
+                        <div className="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-10 h-10">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                            </svg>
+                        </div>
+                        <h2 className="text-2xl font-bold text-gray-900 mb-4">Security Warning</h2>
+                        <p className="text-gray-600 mb-6 text-lg">
+                            You are not allowed to switch tabs or open new windows during the assessment.
+                        </p>
+                        <p className="text-sm text-red-500 font-bold mb-8 uppercase tracking-widest">
+                            Multiple violations will lead to disqualification.
+                        </p>
+                        <button
+                            onClick={() => setSecurityWarning(false)}
+                            className="w-full py-4 bg-red-600 text-white font-bold rounded-xl text-lg hover:bg-red-700 transition shadow-lg"
+                        >
+                            I Understand, Return to Assessment
+                        </button>
+                    </div>
+                </div>
+            )}
             <div className="container mx-auto max-w-3xl">
                 <div className="mb-10 text-center flex flex-col items-center relative print:mb-4">
                     {/* Print Button - Hidden on Print */}
@@ -240,7 +518,6 @@ export default function ExamSession({ params }) {
                     <div className="hidden print:block w-full text-left mb-8 border-b-2 border-black pb-4">
                         <div className="flex justify-between items-center mb-6">
                             <div className="flex items-center gap-4">
-                                {/* Use simple img tag for print to avoid Next.js Image issues in print mode sometimes, or just ensure styles work */}
                                 <img
                                     src="https://res.cloudinary.com/dorreici1/image/upload/v1763636388/420a5318-cb6c-4915-a728-979d8973a9d1.png"
                                     alt="Logo"
@@ -268,7 +545,6 @@ export default function ExamSession({ params }) {
                             <div className="flex items-baseline col-span-2">
                                 <span className="font-bold mr-2 w-32">Position Applied:</span>
                                 <span className="border-b border-black flex-1 h-6 font-mono pl-2">
-                                    {/* Try to get exam title or job title if available in the future. For now, use generic or passed data */}
                                     {questions.length > 0 ? "Aarogya Aadhar Applicant" : ""}
                                 </span>
                             </div>
@@ -285,70 +561,144 @@ export default function ExamSession({ params }) {
                     </div>
                 </div>
 
-                <div className="space-y-6 print:space-y-8">
+                <div className="space-y-8 print:space-y-8">
                     {questions.map((q, idx) => {
-                        const isQuestionYesNo = q.options && q.options.length > 0;
+                        // Logic to determine Question Type
+                        const isRadio = q.type === 'RADIO' || (q.options && q.options.length > 0 && !q.type);
+                        const isRadioWithInput = q.type === 'RADIO_WITH_INPUT';
+                        const isText = q.type === 'TEXT';
 
                         return (
-                            <div key={q.id || idx} className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow print:shadow-none print:border-none print:p-0 print:mb-8 break-inside-avoid">
-                                <h3 className="text-lg font-semibold text-gray-800 mb-4 leading-relaxed print:text-black">
-                                    <span className="text-gray-400 mr-2 print:text-black print:font-bold">{idx + 1}.</span>
-                                    {q.text}
+                            <div key={q.id || idx} className="bg-white p-8 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all print:shadow-none print:border-none print:p-0 break-inside-avoid relative overflow-hidden group">
+                                {/* Secure Feel: Side accent */}
+                                <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-primary to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+
+                                <h3 className="text-lg font-semibold text-gray-800 mb-6 leading-relaxed print:text-black flex gap-3">
+                                    <span className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-blue-50 text-blue-600 text-sm font-bold border border-blue-100 print:bg-transparent print:border-none print:text-black">
+                                        {idx + 1}
+                                    </span>
+                                    <span>{q.text}</span>
                                 </h3>
 
-                                {isQuestionYesNo ? (
-                                    <div className="flex flex-col sm:flex-row gap-4 print:gap-12 print:mt-2">
-                                        {q.options.map(opt => (
-                                            <div key={opt} className="print:hidden flex-1">
-                                                <label className={`
-                                                    flex items-center justify-center py-4 px-6 rounded-xl cursor-pointer transition-all border-2 w-full
-                                                    ${answers[q.id] === opt ? 'bg-primary/5 border-primary text-primary font-bold shadow-sm' : 'bg-white border-gray-100 text-gray-600 hover:border-gray-200 hover:bg-gray-50'}
-                                                  `}>
-                                                    <input type="radio" name={q.id} value={opt} className="hidden" onChange={() => handleAnswer(q.id, opt)} checked={answers[q.id] === opt} />
-                                                    {opt}
-                                                </label>
-                                            </div>
-                                        ))}
-
-                                        {/* Print Version: Checkboxes */}
-                                        {q.options.map(opt => (
-                                            <div key={opt} className="hidden print:flex items-center gap-2">
-                                                <div className="w-6 h-6 border-2 border-black rounded flex-shrink-0"></div>
-                                                <span className="text-black font-medium">{opt}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <>
-                                        <div className="relative">
-                                            <textarea
-                                                className={`w-full p-6 bg-gray-50 rounded-xl border focus:ring-4 outline-none transition-all min-h-[180px] text-gray-800 placeholder:text-gray-400 font-medium leading-relaxed resize-y spell-check-false print:hidden
-                                                    ${(answers[q.id]?.trim().split(/\s+/).filter(w => w.length > 0).length || 0) > 100
-                                                        ? 'border-red-300 focus:border-red-500 focus:ring-red-500/10'
-                                                        : 'border-gray-200 focus:border-primary focus:ring-primary/10'}`}
-                                                placeholder="Type your detailed answer here... (Max 100 words)"
-                                                onChange={(e) => handleAnswer(q.id, e.target.value)}
-                                                value={answers[q.id] || ''}
-                                                spellCheck="false"
-                                            ></textarea>
-                                            <div className={`absolute bottom-4 right-4 text-xs font-bold print:hidden pointer-events-none transition-colors
-                                                ${(answers[q.id]?.trim().split(/\s+/).filter(w => w.length > 0).length || 0) > 100 ? 'text-red-500' : 'text-gray-400'}`}>
-                                                {answers[q.id]?.trim().split(/\s+/).filter(w => w.length > 0).length || 0} / 100 words
-                                            </div>
-                                        </div>
-
-                                        {/* Print Version: Ruled Lines */}
-                                        <div className="hidden print:block w-full mt-4 space-y-8">
-                                            {[...Array(6)].map((_, i) => (
-                                                <div key={i} className="border-b border-gray-300 w-full h-2"></div>
+                                {/* 1. RADIO OPTIONS (Standard) */}
+                                {isRadio && !isRadioWithInput && (
+                                    <div className="space-y-4">
+                                        <div className="flex flex-col sm:flex-row gap-4 print:gap-8">
+                                            {q.options.map(opt => (
+                                                <div key={opt} className="flex-1">
+                                                    <label className={`
+                                                        flex items-center justify-center py-3 px-6 rounded-lg cursor-pointer transition-all border w-full
+                                                        ${answers[q.id]?.value === opt ? 'bg-blue-600 text-white border-blue-600 shadow-md transform scale-[1.02]' : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50'}
+                                                    `}>
+                                                        <input
+                                                            type="radio"
+                                                            name={q.id}
+                                                            value={opt}
+                                                            className="hidden"
+                                                            onChange={() => handleAnswer(q.id, { value: opt })}
+                                                            checked={answers[q.id]?.value === opt}
+                                                        />
+                                                        {opt}
+                                                    </label>
+                                                </div>
                                             ))}
                                         </div>
-                                    </>
+
+                                        {/* Conditional Explanation */}
+                                        {q.requiresExplanation && answers[q.id]?.value === 'Yes' && (
+                                            <div className="mt-4 animate-fadeIn">
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                    {q.explanationLabel || "Please explain:"}
+                                                    <span className="text-gray-400 font-normal ml-2">
+                                                        (Min {Math.floor((q.wordLimit || 100) / 2)} - Max {q.wordLimit || 100} words)
+                                                    </span>
+                                                </label>
+                                                <div className="relative">
+                                                    <textarea
+                                                        className={`w-full p-4 bg-gray-50 rounded-lg border focus:ring-2 outline-none transition-all min-h-[100px] text-sm
+                                                            ${((answers[q.id]?.explanation || '').trim().split(/\s+/).filter(w => w.length > 0).length || 0) > (q.wordLimit || 100)
+                                                                ? 'border-red-300 focus:border-red-500 focus:ring-red-500/10'
+                                                                : 'border-gray-200 focus:border-primary focus:ring-primary/10'}`}
+                                                        placeholder={`Type your explanation here...`}
+                                                        onChange={(e) => handleAnswer(q.id, { explanation: e.target.value })}
+                                                        value={answers[q.id]?.explanation || ''}
+                                                    ></textarea>
+                                                    <div className={`absolute bottom-2 right-2 text-[10px] font-bold transition-colors flex gap-1
+                                                        ${((answers[q.id]?.explanation || '').trim().split(/\s+/).filter(w => w.length > 0).length || 0) < Math.floor((q.wordLimit || 100) / 2) ? 'text-amber-500' :
+                                                            ((answers[q.id]?.explanation || '').trim().split(/\s+/).filter(w => w.length > 0).length || 0) > (q.wordLimit || 100) ? 'text-red-500' : 'text-green-600'}`}>
+                                                        <span>Count: {(answers[q.id]?.explanation || '').trim().split(/\s+/).filter(w => w.length > 0).length || 0}</span>
+                                                        <span>/ Min: {Math.floor((q.wordLimit || 100) / 2)}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
                                 )}
 
-                                {searchParams.get('preview') === 'true' && q.correctAnswer && (
-                                    <div className="mt-4 p-3 bg-green-50 text-green-700 text-sm font-bold border border-green-100 rounded-lg flex items-center gap-2 print:hidden">
-                                        <CheckCircleIcon className="w-5 h-5" /> Correct Answer: {q.correctAnswer}
+                                {/* 2. RADIO WITH INPUT (Bachelor / Other) */}
+                                {isRadioWithInput && (
+                                    <div className="space-y-3">
+                                        {q.options.map(opt => {
+                                            const isSelected = answers[q.id]?.value === opt;
+                                            const showInput = (opt === 'Bachelor Degree' || opt === 'Other') && isSelected;
+
+                                            return (
+                                                <div key={opt} className="w-full transition-all">
+                                                    <label className={`
+                                                        flex items-center p-3 rounded-lg cursor-pointer border transition-all
+                                                        ${isSelected ? 'bg-blue-50 border-blue-500 ring-1 ring-blue-500' : 'bg-white border-gray-200 hover:bg-gray-50'}
+                                                    `}>
+                                                        <input
+                                                            type="radio"
+                                                            name={q.id}
+                                                            value={opt}
+                                                            className="w-4 h-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                                                            onChange={() => handleAnswer(q.id, { value: opt })}
+                                                            checked={isSelected}
+                                                        />
+                                                        <span className="ml-3 text-gray-700 font-medium">{opt}</span>
+                                                    </label>
+
+                                                    {showInput && (
+                                                        <div className="ml-8 mt-2 animate-fadeIn">
+                                                            <input
+                                                                type="text"
+                                                                className="w-full p-2 text-sm border-b-2 border-blue-200 focus:border-blue-500 outline-none bg-transparent transition-colors placeholder:text-gray-400"
+                                                                placeholder={opt === 'Bachelor Degree' ? "Please specify your degree..." : "Please specify..."}
+                                                                value={answers[q.id]?.detail || ''}
+                                                                onChange={(e) => handleAnswer(q.id, { detail: e.target.value })}
+                                                                autoFocus
+                                                            />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+
+                                {/* 3. TEXT AREA (Descriptive) */}
+                                {isText && (
+                                    <div className="relative mt-2">
+                                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+                                            Min {Math.floor((q.wordLimit || 200) / 2)} - Max {q.wordLimit || 200} words required
+                                        </label>
+                                        <textarea
+                                            className={`w-full p-6 bg-white rounded-xl border focus:ring-4 outline-none transition-all min-h-[180px] text-gray-800 placeholder:text-gray-400 font-medium leading-relaxed resize-y spell-check-false shadow-inner
+                                                ${((answers[q.id]?.value || '').trim().split(/\s+/).filter(w => w.length > 0).length || 0) > (q.wordLimit || 200)
+                                                    ? 'border-red-300 focus:border-red-500 focus:ring-red-500/10'
+                                                    : 'border-gray-200 focus:border-primary focus:ring-primary/10'}`}
+                                            placeholder={`Type your detailed answer here...`}
+                                            onChange={(e) => handleAnswer(q.id, { value: e.target.value })}
+                                            value={answers[q.id]?.value || ''}
+                                            spellCheck="false"
+                                        ></textarea>
+                                        <div className={`absolute bottom-4 right-4 text-xs font-bold pointer-events-none transition-colors flex gap-2
+                                            ${((answers[q.id]?.value || '').trim().split(/\s+/).filter(w => w.length > 0).length || 0) < Math.floor((q.wordLimit || 200) / 2) ? 'text-amber-500' :
+                                                ((answers[q.id]?.value || '').trim().split(/\s+/).filter(w => w.length > 0).length || 0) > (q.wordLimit || 200) ? 'text-red-500' : 'text-green-600'}`}>
+                                            <span>Count: {(answers[q.id]?.value || '').trim().split(/\s+/).filter(w => w.length > 0).length || 0}</span>
+                                            <span>/ Min: {Math.floor((q.wordLimit || 200) / 2)}</span>
+                                        </div>
                                     </div>
                                 )}
                             </div>
@@ -361,9 +711,9 @@ export default function ExamSession({ params }) {
                         onClick={handleSubmit}
                         disabled={submitting || Object.keys(answers).length < questions.length}
                         className="
-              px-10 py-4 bg-primary text-white rounded-full font-bold text-lg shadow-xl 
-              hover:bg-blue-700 hover:shadow-2xl hover:-translate-y-1 transition-all 
-              disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:shadow-none
+              px-10 py-4 bg-gray-900 text-white rounded-lg font-bold text-lg shadow-xl 
+              hover:bg-black hover:shadow-2xl hover:-translate-y-1 transition-all 
+              disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:shadow-none w-full sm:w-auto
             "
                     >
                         {submitting ? (

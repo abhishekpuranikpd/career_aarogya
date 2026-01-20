@@ -339,12 +339,22 @@ export default function DashboardClient({ initialUsers, initialExams, initialJob
                                </div>
                             </div>
                          </div>
-                         <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-3">
                             <div className="text-center px-4">
                                <div className="text-xl font-bold text-gray-900">{job._count?.applicants || 0}</div>
                                <div className="text-xs text-gray-500 uppercase">Applicants</div>
                             </div>
                             <div className="flex gap-2 border-l pl-4 border-gray-200">
+                               <button 
+                                  onClick={() => {
+                                      setPositionFilter(job.title);
+                                      setActiveTab("Applicants");
+                                  }}
+                                  className="p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition" 
+                                  title="View Linked Applicants"
+                               >
+                                  <UserGroupIcon className="w-5 h-5" />
+                               </button>
                                <Link href={`/careers/${job.id}`} target="_blank" className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition" title="Preview">
                                   <EyeIcon className="w-5 h-5" />
                                </Link>
@@ -533,7 +543,7 @@ export default function DashboardClient({ initialUsers, initialExams, initialJob
                                <DocumentTextIcon className="w-5 h-5" />
                              </a>
                            )}
-                           <Link href={`/admin/exams/${user.jobPost?.examId || ''}`} className="text-gray-500 hover:text-primary transition" title="View Application">
+                           <Link href={`/admin/users/${user.id}`} className="text-gray-500 hover:text-primary transition" title="View Answers">
                               <EyeIcon className="w-5 h-5" />
                            </Link>
                          </td>

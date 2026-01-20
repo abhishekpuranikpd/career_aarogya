@@ -29,12 +29,26 @@ export async function DELETE(req, { params }) {
   const { id } = await params;
 
   try {
+    // 1. Delete all responses linked to this exam
+    await prisma.response.deleteMany({
+      where: { examId: id }
+    });
+
+    // 2. Unlink any JobPosts linked to this exam (set examId to null)
+    await prisma.jobPost.updateMany({
+      where: { examId: id },
+      data: { examId: null }
+    });
+
+    // 3. Finally, delete the exam
     await prisma.exam.delete({
       where: { id }
     });
+    
     return NextResponse.json({ message: "Exam deleted successfully" });
   } catch (error) {
     console.error("Exam delete error:", error);
-    return NextResponse.json({ error: "Failed to delete exam" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to delete exam", details: error.message }, { status: 500 });
   }
+
 }
