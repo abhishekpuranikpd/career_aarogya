@@ -30,6 +30,15 @@ export default async function UserDashboard() {
   const latestResponse = user.responses[0];
   const pendingExam = user.jobPost?.examId && (!latestResponse || latestResponse.examId !== user.jobPost.examId);
 
+  // Exam Time Window Logic
+  const now = new Date();
+  const exam = user.jobPost?.exam;
+  const start = exam?.windowStart ? new Date(exam.windowStart) : null;
+  const end = exam?.windowEnd ? new Date(exam.windowEnd) : null;
+  
+  const notStarted = start && now < start;
+  const expired = end && now > end;
+
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       <div className="bg-primary text-white py-12">
@@ -109,14 +118,44 @@ export default async function UserDashboard() {
                              </>
                            ) : (
                              <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 mt-2">
-                                <p className="text-blue-900 font-medium mb-3">Action Required</p>
-                                <p className="text-sm text-gray-600 mb-4">Please complete the mandatory assessment to proceed.</p>
-                                <Link 
-                                    href={`/exam/${user.jobPost.examId}`} 
-                                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition shadow-sm hover:shadow"
-                                >
-                                  Take Assessment Now
-                                </Link>
+                                {notStarted ? (
+                                    <div className="text-center py-2">
+                                        <div className="inline-flex items-center gap-2 text-amber-600 font-bold mb-2 bg-amber-50 px-3 py-1 rounded-full border border-amber-100 text-sm">
+                                            <ClockIcon className="w-4 h-4" />
+                                            Assessment Not Yet Active
+                                        </div>
+                                        <p className="text-gray-600 text-sm mb-4 max-w-md mx-auto">
+                                            The assessment window has not started yet. Please come back and login at the scheduled time.
+                                        </p>
+                                        <div className="bg-white p-3 rounded border border-blue-100 inline-block text-left text-sm">
+                                            <p className="text-gray-500 text-xs uppercase font-bold tracking-wider mb-1">Scheduled Window</p>
+                                            <p className="text-blue-900 font-bold">
+                                                {start?.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
+                                            </p>
+                                        </div>
+                                    </div>
+                                ) : expired ? (
+                                    <div className="text-center py-2">
+                                        <div className="inline-flex items-center gap-2 text-red-600 font-bold mb-2 bg-red-50 px-3 py-1 rounded-full border border-red-100 text-sm">
+                                            <XCircleIcon className="w-4 h-4" />
+                                            Assessment Expired
+                                        </div>
+                                        <p className="text-gray-600 text-sm">
+                                            The window for this assessment has closed.
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <p className="text-blue-900 font-medium mb-3">Action Required</p>
+                                        <p className="text-sm text-gray-600 mb-4">Please complete the mandatory assessment to proceed.</p>
+                                        <Link 
+                                            href={`/exam/${user.jobPost.examId}`} 
+                                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition shadow-sm hover:shadow"
+                                        >
+                                          Take Assessment Now
+                                        </Link>
+                                    </>
+                                )}
                              </div>
                            )}
                          </div>

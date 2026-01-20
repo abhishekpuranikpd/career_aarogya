@@ -72,13 +72,9 @@ function RegisterForm() {
         password: formData.password
       });
 
-      // Auto redirect to careers after short delay
+      // Auto redirect to dashboard after short delay
       setTimeout(() => {
-         if (jobId) {
-             router.push(`/careers/${jobId}`);
-         } else {
-             router.push("/careers");
-         }
+          router.push("/dashboard");
       }, 2000);
       
     } catch (err) {
@@ -99,8 +95,8 @@ function RegisterForm() {
           <p className="text-gray-600 mb-8">
             Redirecting you to the Careers page...
           </p>
-          <Link href={jobId ? `/careers/${jobId}` : "/careers"} className="block w-full py-3 bg-primary text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
-            {jobId ? "Continue to Application" : "Go to Careers"}
+          <Link href="/dashboard" className="block w-full py-3 bg-primary text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
+            Continue to Dashboard
           </Link>
         </div>
       </div>

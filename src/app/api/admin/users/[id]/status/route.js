@@ -35,7 +35,7 @@ export async function PUT(req, { params }) {
             message += `You have successfully passed the assessment phase. We will review your profile and get back to you.\n\n`;
         }
 
-        message += `You can check your status anytime on your dashboard: ${process.env.NEXT_PUBLIC_APP_URL}/dashboard\n\nRegards,\nAarogya Aadhar Team`;
+        message += `You can check your status anytime on your dashboard: ${process.env.NEXT_PUBLIC_BASE_URL}/dashboard\n\nRegards,\nAarogya Aadhar Team`;
 
         await transporter.sendMail({
             ...mailOptions,
@@ -47,7 +47,7 @@ export async function PUT(req, { params }) {
                    ${status === 'INTERVIEW' ? '<p style="color:purple;font-weight:bold">✨ You have been selected for an interview! Our HR team will contact you shortly.</p>' : ''}
                    ${status === 'HIRED' ? '<p style="color:green;font-weight:bold">🎉 Congratulations! You have been Hired.</p>' : ''}
                    ${status === 'REJECTED' ? '<p>Thank you for your interest. We have decided to move forward with other candidates.</p>' : ''}
-                   <p>Login to checks details: <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard">Dashboard</a></p>
+                   <p>Login to checks details: <a href="${process.env.NEXT_PUBLIC_BASE_URL}/dashboard">Dashboard</a></p>
                    <br/><p>Regards,<br/>Aarogya Aadhar Team</p>`
         });
     } catch (emailError) {
