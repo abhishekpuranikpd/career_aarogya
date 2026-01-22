@@ -53,24 +53,9 @@ export async function POST(req) {
         const exam = await prisma.exam.findUnique({ where: { id: examId }, include: { questions: true } });
         
         if (exam) {
-            let answerHtml = `
-                <html>
-                <head>
-                    <style>
-                        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-                        .header { background: #f4f4f4; padding: 20px; text-align: center; border-bottom: 3px solid #0056b3; }
-                        .question { margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-                        .q-text { font-weight: bold; color: #0056b3; margin-bottom: 5px; }
-                        .answer { background: #eef7ff; padding: 10px; border-radius: 5px; border-left: 4px solid #0056b3; }
-                        .footer { margin-top: 30px; font-size: 12px; color: #888; text-align: center; }
-                    </style>
-                </head>
-                <body>
-                    <div class="header">
-                        <h1>Aarogya Aadhar Assessment</h1>
-                        <p>Candidate: ${user.name} | Date: ${new Date().toLocaleDateString()}</p>
-                    </div>
-                    <div style="padding: 20px;">
+            let qaHtml = `
+                <div style="margin-top: 20px; border-top: 2px solid #eee; padding-top: 20px;">
+                    <h2 style="color: #333;">Your Responses</h2>
             `;
 
             exam.questions.forEach((q, i) => {
@@ -88,10 +73,10 @@ export async function POST(req) {
                     }
                 }
 
-                answerHtml += `
-                    <div class="question">
-                        <div class="q-text">Q${i+1}. ${q.text}</div>
-                        <div class="answer">
+                qaHtml += `
+                    <div style="margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                        <div style="font-weight: bold; color: #0056b3; margin-bottom: 5px;">Q${i+1}. ${q.text}</div>
+                        <div style="background: #f9f9f9; padding: 10px; border-radius: 4px;">
                             <strong>Answer:</strong> ${val}
                             ${extra}
                         </div>
@@ -99,15 +84,7 @@ export async function POST(req) {
                 `;
             });
 
-            answerHtml += `
-                    </div>
-                    <div class="footer">
-                        <p>This is an automated copy of your responses.</p>
-                        <p>&copy; ${new Date().getFullYear()} Aarogya Aadhar. All rights reserved.</p>
-                    </div>
-                </body>
-                </html>
-            `;
+            qaHtml += `</div>`;
 
             // Dynamic import to avoid circular dep issues if any
             const { sendEmail } = require('@/lib/mail');
@@ -116,20 +93,18 @@ export async function POST(req) {
                 to: user.email,
                 subject: `Exam Submission Confirmation - ${exam.title}`,
                 html: `
-                    <p>Dear ${user.name},</p>
-                    <p>Thank you for completing the <strong>${exam.title}</strong>.</p>
-                    <p>Your responses have been recorded successfully. Please find attached a copy of your answers.</p>
-                    <p>Our team will review your application and get back to you shortly.</p>
-                    <br>
-                    <p>Best regards,<br>Recruitment Team</p>
-                `,
-                attachments: [
-                    {
-                        filename: 'My_Assessment_Answers.html',
-                        content: answerHtml,
-                        contentType: 'text/html'
-                    }
-                ]
+                    <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto;">
+                        <p>Dear ${user.name},</p>
+                        <p>Thank you for completing the <strong>${exam.title}</strong>.</p>
+                        <p>Your responses have been recorded successfully. Below is a copy of your answers:</p>
+                        
+                        ${qaHtml}
+
+                        <br>
+                        <p>Our team will review your application and get back to you shortly.</p>
+                        <p>Best regards,<br>Recruitment Team</p>
+                    </div>
+                `
             });
         }
     } catch (emailErr) {

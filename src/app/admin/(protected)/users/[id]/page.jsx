@@ -10,7 +10,8 @@ import {
     PhoneIcon,
     DocumentTextIcon,
     CheckCircleIcon,
-    XCircleIcon
+    XCircleIcon,
+    PrinterIcon
 } from "@heroicons/react/24/outline";
 
 export default async function ApplicantDetails({ params }) {
@@ -110,8 +111,17 @@ export default async function ApplicantDetails({ params }) {
                                                 Submitted: {new Date(response.submittedAt).toLocaleDateString()} at {new Date(response.submittedAt).toLocaleTimeString()}
                                             </p>
                                         </div>
-                                        <div className="text-sm px-3 py-1 bg-white border rounded font-mono">
-                                            ID: {response.id.slice(-6)}
+                                        <div className="flex items-center gap-3">
+                                            <a
+                                                href={`/admin/print/response/${response.id}`}
+                                                target="_blank"
+                                                className="flex items-center gap-2 text-sm px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition shadow-sm font-medium"
+                                            >
+                                                <PrinterIcon className="w-4 h-4" /> Print PDF
+                                            </a>
+                                            <div className="text-sm px-3 py-1 bg-white border rounded font-mono">
+                                                ID: {response.id.slice(-6)}
+                                            </div>
                                         </div>
                                     </div>
 
