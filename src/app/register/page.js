@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import ResumeUpload from "@/components/Upload";
 import Link from "next/link";
-import { CheckCircleIcon } from "@heroicons/react/24/outline";
+import { CheckCircleIcon, EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 
 function RegisterForm() {
   const router = useRouter();
@@ -20,7 +20,11 @@ function RegisterForm() {
     mobile: "",
     password: "",
     position: "Staff Nurse", // Default
+    otp: "",
   });
+  
+  const [otpSent, setOtpSent] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   
   useEffect(() => {
     if (jobTitle) {
@@ -69,7 +73,8 @@ function RegisterForm() {
       await signIn("user-login", {
         redirect: false,
         email: formData.email,
-        password: formData.password
+        password: formData.password,
+        otp: formData.otp // Pass the same OTP
       });
 
       // Auto redirect to dashboard after short delay
@@ -134,26 +139,99 @@ function RegisterForm() {
             
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">Email Address</label>
-              <input
-                type="email"
-                required
-                className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              />
+              <div className="flex gap-2">
+                <input
+                  type="email"
+                  required
+                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  disabled={otpSent}
+                />
+                {!otpSent && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (!formData.email) {
+                        setError("Please enter email first");
+                        return;
+                      }
+                      setLoading(true);
+                       try {
+                        const res = await fetch('/api/auth/send-otp', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ email: formData.email, type: 'register' })
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                          setOtpSent(true);
+                          setError("");
+                        } else {
+                          setError(data.error);
+                        }
+                      } catch (err) {
+                        setError("Failed to send OTP");
+                      } finally {
+                        setLoading(false);
+                      }
+                    }}
+                    disabled={loading || !formData.email}
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 whitespace-nowrap disabled:opacity-50"
+                  >
+                    {loading ? "Sending..." : "Send OTP"}
+                  </button>
+                )}
+              </div>
+              {otpSent && (
+                  <div className="mt-2 animate-fadeIn">
+                       <label className="text-sm font-medium text-gray-700">One-Time Password (OTP)</label>
+                       <div className="flex gap-2 mt-1">
+                           <input
+                            type="text"
+                            required
+                            placeholder="Enter 4-digit code"
+                            className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                            value={formData.otp}
+                            onChange={(e) => setFormData({ ...formData, otp: e.target.value })}
+                          />
+                          <button
+                             type="button"
+                             onClick={() => setOtpSent(false)}
+                             className="text-xs text-gray-500 hover:text-gray-700 whitespace-nowrap px-2"
+                          >
+                             Change Email
+                          </button>
+                       </div>
+                       <p className="text-xs text-green-600 mt-1">OTP sent to {formData.email}</p>
+                  </div>
+              )}
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">Create Password</label>
-              <input
-                type="password"
-                required
-                className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                placeholder="Min. 6 characters"
-                minLength={6}
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  required
+                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all pr-12"
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  placeholder="Min. 6 characters"
+                  minLength={6}
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 px-4 flex items-center text-gray-400 hover:text-gray-600"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeSlashIcon className="h-5 w-5" aria-hidden="true" />
+                  ) : (
+                    <EyeIcon className="h-5 w-5" aria-hidden="true" />
+                  )}
+                </button>
+              </div>
             </div>
 
             <div className="space-y-2">

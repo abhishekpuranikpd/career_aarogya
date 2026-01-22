@@ -7,16 +7,15 @@ export default function ExamSettings({ exam }) {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     
-    // Initialize dates (convert ISO strings to YYYY-MM-DDTHH:mm for input)
+    // Convert UTC from DB to IST string "YYYY-MM-DDThh:mm" for input
     const formatForInput = (dateStr) => {
         if (!dateStr) return "";
-        const d = new Date(dateStr);
-        // Adjust for timezone offset to show local time in input properly
-        // Or simpler: just use substring if it is ISO. But DB stores UTC usually.
-        // datetime-local expects "YYYY-MM-DDThh:mm" in local time.
-        // Let's use a simple util to format local.
-        const pad = (n) => n < 10 ? '0' + n : n;
-        return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        const date = new Date(dateStr);
+        // Get UTC time, add 5.5 hours to get IST time value
+        const istOffset = 5.5 * 60 * 60 * 1000;
+        const istDate = new Date(date.getTime() + istOffset);
+        
+        return istDate.toISOString().slice(0, 16);
     };
 
     const [windowStart, setWindowStart] = useState(formatForInput(exam.windowStart));
@@ -25,12 +24,28 @@ export default function ExamSettings({ exam }) {
     const handleUpdate = async () => {
         setLoading(true);
         try {
+            // When saving, we assume the user input IS the IST time.
+            // We need to store it such that when it comes back as UTC, it represents this time.
+            // Actually, if we want to "store IST", we usually mean storing the timestamp that *corresponds* to that IST time.
+            // If user picks 10:00 AM in input, that means 10:00 AM IST.
+            // 10:00 AM IST = 4:30 AM UTC.
+            // So we need to construct a date that is 10:00 AM IST.
+            
+            const toISTDate = (isoString) => {
+                if (!isoString) return null;
+                const date = new Date(isoString); // treats as local if no Z, or UTC if Z. Input is "YYYY-MM-DDThh:mm" (local-ish)
+                // We want this string to be treated as IST.
+                // So "2026-01-20T10:00" -> 10:00 AM IST.
+                // New Date("2026-01-20T10:00+05:30") works.
+                return new Date(`${isoString}:00+05:30`);
+            };
+
             const res = await fetch(`/api/exam/${exam.id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    windowStart: windowStart || null,
-                    windowEnd: windowEnd || null
+                    windowStart: toISTDate(windowStart),
+                    windowEnd: toISTDate(windowEnd)
                 })
             });
 

@@ -46,6 +46,9 @@ export async function POST(req) {
       html: `<h1>Registration Successful</h1><p>Dear ${name},</p><p>Thank you for registering for the <strong>${position}</strong> position at Aarogya Aadhar.</p><p>Your application ID is: <strong>${user.id}</strong></p><p>You must now complete the online assessment to finalize your application.</p><p><a href="${process.env.NEXT_PUBLIC_BASE_URL || 'https://career.aarogyaaadhar.com'}/dashboard" style="background-color:#1e40af;color:white;padding:10px 20px;text-decoration:none;border-radius:5px;">Start Assessment</a></p><br/><p>Regards,<br/>Aarogya Aadhar Team</p>`,
     });
 
+    // Clear OTP
+    await prisma.verificationCode.delete({ where: { email } });
+
     return NextResponse.json({ success: true, user, redirectUrl: nextStep });
   } catch (error) {
     console.error('Registration error:', error);

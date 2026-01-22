@@ -31,20 +31,38 @@ export const authOptions = {
       name: "Applicant",
       credentials: {
         email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" }
+        password: { label: "Password", type: "password" },
+        otp: { label: "OTP", type: "text" }
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null;
+        if (!credentials?.email || !credentials?.password || !credentials?.otp) {
+           throw new Error("Missing credentials");
+        }
         
         const user = await prisma.user.findUnique({ where: { email: credentials.email } });
         
-        // Ensure we check for password existence (since older users might not have one)
-        // In real app, use bcrypt.compare(credentials.password, user.password)
-        // Here assuming plain text for consistency with admin or simple hash logic if implemented
-        if (user && user.password && user.password === credentials.password) {
-           return { id: user.id, email: user.email, name: user.name, role: "user" };
+        // 1. Verify Password
+        if (!user || !user.password || user.password !== credentials.password) {
+           throw new Error("Invalid email or password");
         }
-        return null;
+
+        // 2. Verify OTP
+        const otpRecord = await prisma.verificationCode.findUnique({
+          where: { email: credentials.email }
+        });
+
+        if (!otpRecord || otpRecord.code !== credentials.otp) {
+          throw new Error("Invalid OTP");
+        }
+
+        if (new Date() > otpRecord.expires) {
+          throw new Error("OTP has expired");
+        }
+
+        // 3. Clear OTP after successful login (optional, but good practice)
+        await prisma.verificationCode.delete({ where: { email: credentials.email } });
+
+        return { id: user.id, email: user.email, name: user.name, role: "user" };
       }
     })
   ],
