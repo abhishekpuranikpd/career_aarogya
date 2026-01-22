@@ -8,6 +8,10 @@ require('dotenv').config({ path: '.env.local' });
 const prisma = new PrismaClient();
 
 const transporter = nodemailer.createTransport({
+  pool: true, // Reuse connections
+  maxConnections: 1, // Restrict to 1 connection to avoid "Too many login attempts"
+  messagesPerConnection: 100, // Send 100 emails per connection
+  rateLimit: 1, // Max 1 message per second (throttling)
   host: process.env.SMTP_HOST || "smtp.gmail.com",
   port: parseInt(process.env.SMTP_PORT || "587"),
   secure: false, // true for 465
@@ -17,9 +21,24 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+const fs = require('fs');
+const path = require('path');
+
 async function sendInvite() {
     try {
-        // Fetch One Active Job with an Exam
+        // Read Emails
+        const emailFilePath = path.join(__dirname, '..', 'received_emails.txt');
+        const fileContent = fs.readFileSync(emailFilePath, 'utf-8');
+        const emails = fileContent.split(/\r?\n/).map(e => e.trim()).filter(e => e && e.includes('@'));
+
+        if (emails.length === 0) {
+            console.error("No valid emails found in received_emails.txt");
+            return;
+        }
+
+        console.log(`📋 Found ${emails.length} emails to process...`);
+
+        // Fetch Job
         const job = await prisma.jobPost.findFirst({
             where: { 
                 isActive: true, 
@@ -33,17 +52,14 @@ async function sendInvite() {
             return;
         }
 
-        const toEmail = "abhishekpuranikpd@gmail.com";
         const subject = `Invitation for Second Round Assessment - ${job.title} | Aarogya Aadhar`;
-        
         // Correct Link: Redirect to Register page with Job ID and Title
         const encodedTitle = encodeURIComponent(job.title);
         const examLink = `https://career.aarogyaaadhar.com/register?jobId=${job.id}&title=${encodedTitle}`;
-        
         const logoUrl = "https://res.cloudinary.com/dorreici1/image/upload/v1763636388/420a5318-cb6c-4915-a728-979d8973a9d1.png";
 
-        // HTML Template
-        const html = `
+        // HTML Template Generator
+        const getHtml = () => `
         <!DOCTYPE html>
         <html>
         <head>
@@ -64,17 +80,12 @@ async function sendInvite() {
         </head>
         <body>
             <div class="container">
-              
-
-                <!-- Main Content -->
                 <div class="content">
                     <h2 class="h2">Dear Candidate,</h2>
                     <p>Thank you for your interest in the <strong>${job.title}</strong> position at Aarogya Aadhar. We are pleased to invite you to the second round of our selection process.</p>
                     
-                <!-- Banner Image -->
                 ${job.imageUrl ? `<div style="margin: 20px 0; border-radius: 8px; overflow: hidden;"><img src="${job.imageUrl}" alt="Job Banner" style="width: 100%; height: auto; object-fit: cover;" /></div>` : ''}
 
-                <!-- Job Details -->
                 <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e2e8f0;">
                     <h3 style="margin-top: 0; color: #1e293b;">${job.title}</h3>
                     <p style="font-size: 14px; color: #64748b; margin-bottom: 10px;">
@@ -89,8 +100,6 @@ async function sendInvite() {
 
                 <p>You have been shortlisted for an online technical assessment. Please find the details below:</p>
 
-                <!-- Exam Details Box -->
-                <!-- Exam Details Box -->
                 <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #e2e8f0;">
                     <h3 style="margin-top: 0; color: #1e293b; margin-bottom: 15px;">Assessment Details</h3>
                     <div style="margin-bottom: 10px;">
@@ -107,14 +116,13 @@ async function sendInvite() {
                     </div>
                 </div>
 
-                <p>The link below will become active during the scheduled window. Please ensure you have a stable connection and a quiet place to take the test and writethe exam in tab or desktop.</p>
+                <p>The link below will become active during the scheduled window. Please ensure you have a stable connection and a quiet place to take the test and write the exam in tab or desktop.</p>
 
                 <div style="text-align: center;">
                     <a href="${examLink}" class="cta-button">Start Assessment</a>
                 </div>
             </div>
 
-            <!-- Footer -->
             <div class="footer">
                 <img src="${logoUrl}" alt="Aarogya Aadhar" style="height: 30px; opacity: 0.5; margin-bottom: 10px;">
                 <p>&copy; 2030 Aarogya Aadhar. All rights reserved.</p>
@@ -125,18 +133,61 @@ async function sendInvite() {
     </html>
     `;
 
-        const info = await transporter.sendMail({
-            from: `"Aarogya Aadhar Careers" <${process.env.SMTP_USER || process.env.EMAIL_USER}>`,
-            to: toEmail,
-            subject: subject,
-            html: html
+        // Resume from index 358 (User Request)
+        const START_INDEX = 358;
+        const remainingEmails = emails.slice(START_INDEX);
+
+        if (remainingEmails.length === 0) {
+            console.log("No remaining emails to send.");
+            return;
+        }
+
+        console.log(`🚀 Resuming Bulk Send from index ${START_INDEX} (Skipping first ${START_INDEX})...`);
+        console.log(`📋 Processing ${remainingEmails.length} remaining emails...`);
+
+        let sentCount = 0;
+        let failCount = 0;
+
+        // Process sequentially
+        for (const email of remainingEmails) {
+             try {
+                await transporter.sendMail({
+                    from: `"Aarogya Aadhar Careers" <${process.env.SMTP_USER || process.env.EMAIL_USER}>`,
+                    to: email,
+                    subject: subject,
+                    html: getHtml()
+                });
+                console.log(`✅ Sent to ${email}`);
+                sentCount++;
+                // Ultra short delay to allow socket flush but keep speed
+                await new Promise(r => setTimeout(r, 100)); 
+            } catch (err) {
+                console.error(`❌ Failed to send to ${email}:`, err.message);
+                failCount++;
+                // If temporary problem, wait a bit longer
+                if (err.message.includes('421')) {
+                     await new Promise(r => setTimeout(r, 2000));
+                }
+            }
+        }
+
+        console.log("\n✅ All processed.");
+
+        // Send Report
+        const reportEmail = "abhishekpuranikpd@gmail.com";
+        console.log(`📊 Sending Report to ${reportEmail}...`);
+
+        await transporter.sendMail({
+            from: `"System Report" <${process.env.SMTP_USER || process.env.EMAIL_USER}>`,
+            to: reportEmail,
+            subject: "Bulk Invitation Sending Report (Final Run)",
+            text: `Final Bulk sending process complete.\n\nSkipped: ${START_INDEX}\nProcessed in this run: ${remainingEmails.length}\nSuccessfully Sent: ${sentCount}\nFailed: ${failCount}\n\nTotal Sent (Cumulative Estimate): ${START_INDEX + sentCount}\n\nTimestamp: ${new Date().toLocaleString()}`
         });
-        console.log("✅ Dynamic Invite Sent to", toEmail);
-        console.log("Linked Job:", job.title);
-        console.log("Exam ID:", job.exam.id);
+
+        console.log("🎉 Process Complete!");
 
     } catch (error) {
-        console.error("❌ Error sending invite:", error);
+        console.error("❌ Fatal Error:", error);
     } finally {
         await prisma.$disconnect();
     }

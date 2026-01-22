@@ -556,6 +556,8 @@ export default function ExamSession({ params }) {
                                 <li>Answer all questions in the space provided.</li>
                                 <li><strong>Do NOT use AI tools.</strong> Answers detected as AI-generated will lead to rejection.</li>
                                 <li>Write clearly and legible.</li>
+                                <li>Do not open new tabs or windows while taking the exam otherwise your application will be rejected .</li>
+                                <li>Do not refresh the page.</li>
                             </ul>
                         </div>
                     </div>

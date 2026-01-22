@@ -99,7 +99,7 @@ export default async function UserDashboard() {
                      <div className="relative group">
                        <span className="absolute -left-[43px] bg-green-500 text-white w-7 h-7 rounded-full flex items-center justify-center text-sm shadow-sm ring-4 ring-white">✓</span>
                        <h3 className="font-bold text-gray-900 text-lg">Application Submitted</h3>
-                       <p className="text-sm text-gray-500">{new Date(user.createdAt).toLocaleDateString()}</p>
+                       <p className="text-sm text-gray-500">{new Date(user.createdAt).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}</p>
                        <p className="text-sm mt-1 text-gray-600">Profile created and application received.</p>
                      </div>
         
@@ -113,7 +113,7 @@ export default async function UserDashboard() {
                            
                            {latestResponse ? (
                              <>
-                               <p className="text-sm text-gray-500">{new Date(latestResponse.submittedAt).toLocaleDateString()}</p>
+                               <p className="text-sm text-gray-500">{new Date(latestResponse.submittedAt).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}</p>
                                <p className="text-sm mt-1 text-gray-600">Assessment submitted successfully.</p>
                              </>
                            ) : (
@@ -128,9 +128,9 @@ export default async function UserDashboard() {
                                             The assessment window has not started yet. Please come back and login at the scheduled time.
                                         </p>
                                         <div className="bg-white p-3 rounded border border-blue-100 inline-block text-left text-sm">
-                                            <p className="text-gray-500 text-xs uppercase font-bold tracking-wider mb-1">Scheduled Window</p>
+                                            <p className="text-gray-500 text-xs uppercase font-bold tracking-wider mb-1">Scheduled Window (IST)</p>
                                             <p className="text-blue-900 font-bold">
-                                                {start?.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
+                                                {start?.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'medium' })}
                                             </p>
                                         </div>
                                     </div>
@@ -148,6 +148,26 @@ export default async function UserDashboard() {
                                     <>
                                         <p className="text-blue-900 font-medium mb-3">Action Required</p>
                                         <p className="text-sm text-gray-600 mb-4">Please complete the mandatory assessment to proceed.</p>
+                                        
+                                        <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4 rounded-r">
+                                            <div className="flex items-start">
+                                                <div className="flex-shrink-0">
+                                                    <svg className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                                                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                                    </svg>
+                                                </div>
+                                                <div className="ml-3">
+                                                    <h3 className="text-sm font-bold text-red-800 uppercase tracking-wide">Strict Warning</h3>
+                                                    <p className="text-sm text-red-700 mt-1 font-bold">
+                                                        Do NOT open new tabs or windows. 
+                                                    </p>
+                                                    <p className="text-xs text-red-600 mt-1">
+                                                        Serious action will be taken if any malpractice is detected.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+
                                         <Link 
                                             href={`/exam/${user.jobPost.examId}`} 
                                             className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition shadow-sm hover:shadow"
