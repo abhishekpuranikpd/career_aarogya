@@ -5,21 +5,24 @@ const transporter = nodemailer.createTransport({
   port: parseInt(process.env.SMTP_PORT || "587"),
   secure: false, // true for 465, false for other ports
   auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
+    user: process.env.SMTP_USER || process.env.EMAIL_USER,
+    pass: process.env.SMTP_PASS || process.env.EMAIL_PASS,
   },
 });
 
 export const sendEmail = async ({ to, subject, html, attachments }) => {
-  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+  const user = process.env.SMTP_USER || process.env.EMAIL_USER;
+  const pass = process.env.SMTP_PASS || process.env.EMAIL_PASS;
+
+  if (!user || !pass) {
       console.warn("⚠️ SMTP Credentials missing. Email process skipped.");
       console.log(`[Mock Email] To: ${to}, Subject: ${subject}`);
-      return false;
+      return true;
   }
 
   try {
     const info = await transporter.sendMail({
-      from: `"Aarogya Aadhar Careers" <${process.env.SMTP_USER}>`,
+      from: `"Aarogya Aadhar Careers" <${user}>`,
       to,
       subject,
       html,

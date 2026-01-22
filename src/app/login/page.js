@@ -81,6 +81,11 @@ export default function UserLogin() {
                   onChange={e => setFormData({...formData, password: e.target.value})}
                 />
               </div>
+              <div className="text-right mt-1">
+                <Link href="/forgot-password" className="text-xs text-primary hover:underline">
+                    Forgot your password?
+                </Link>
+              </div>
             </div>
 
             <div>
