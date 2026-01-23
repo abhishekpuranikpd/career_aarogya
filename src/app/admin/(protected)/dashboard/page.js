@@ -105,13 +105,9 @@ export default async function AdminDashboard() {
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="container mx-auto">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">Superadmin Overview</h1>
-          <div className="flex gap-4">
-             <div className="flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-semibold">
-                <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
-                System Active
-             </div>
-             <div className="bg-white px-4 py-2 rounded shadow text-sm border border-gray-100">
+          <div className="flex ">
+
+             <div className="bg-white px-4 py-2 truncate rounded shadow text-xs border border-gray-100">
               Logged in as {session.user.email}
             </div>
           </div>
