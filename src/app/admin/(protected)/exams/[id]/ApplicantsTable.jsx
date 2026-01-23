@@ -16,6 +16,7 @@ export default function ApplicantsTable({
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState("All");
     const [scoreFilter, setScoreFilter] = useState("All"); // NEW: Score Filter
+    const [minScore, setMinScore] = useState(""); // NEW: Min Score Filter
     const [dateFilter, setDateFilter] = useState("All"); // NEW: Date Filter (Newest/Oldest)
     const [page, setPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10); // NEW: Items per page
@@ -28,7 +29,11 @@ export default function ApplicantsTable({
 
         const matchesStatus = statusFilter === "All" || r.user.examStatus === statusFilter;
 
-        return matchesSearch && matchesStatus;
+        // Min Score Filter
+        const score = r.score !== null ? r.score : 0;
+        const matchesScore = minScore === "" || score >= Number(minScore);
+
+        return matchesSearch && matchesStatus && matchesScore;
     }).sort((a, b) => {
         // Sort by Date
         if (dateFilter === "Oldest") {
@@ -126,6 +131,26 @@ export default function ApplicantsTable({
                         <option value="Oldest">Oldest First</option>
                     </select>
 
+                    {/* Score Filter */}
+                    <select
+                        className="text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none bg-white min-w-[130px]"
+                        value={scoreFilter}
+                        onChange={(e) => { setScoreFilter(e.target.value); setPage(1); }}
+                    >
+                        <option value="All">All Scores</option>
+                        <option value="HighLow">High to Low</option>
+                        <option value="LowHigh">Low to High</option>
+                    </select>
+
+                    {/* Min Score Input */}
+                    <input
+                        type="number"
+                        placeholder="Min Score"
+                        className="text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none bg-white w-24"
+                        value={minScore}
+                        onChange={(e) => { setMinScore(e.target.value); setPage(1); }}
+                    />
+
                     {/* Status Filter */}
                     <select
                         className="text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none bg-white min-w-[120px]"
@@ -150,6 +175,7 @@ export default function ApplicantsTable({
                         <tr>
                             <th className="p-4 font-semibold text-gray-600 w-40">Submitted (IST)</th>
                             <th className="p-4 font-semibold text-gray-600">Applicant</th>
+                            <th className="p-4 font-semibold text-gray-600">Score</th>
                             <th className="p-4 font-semibold text-gray-600">Current Status</th>
                             <th className="p-4 font-semibold text-gray-600">Resume</th>
                             <th className="p-4 font-semibold text-gray-600 text-right">Action</th>
@@ -164,6 +190,9 @@ export default function ApplicantsTable({
                                 <td className="p-4">
                                     <div className="font-medium text-gray-900">{response.user.name}</div>
                                     <div className="text-xs text-gray-500">{response.user.email}</div>
+                                </td>
+                                <td className="p-4 text-sm font-semibold text-gray-700">
+                                    {response.score !== null ? response.score : "-"}
                                 </td>
 
                                 <td className="p-4">

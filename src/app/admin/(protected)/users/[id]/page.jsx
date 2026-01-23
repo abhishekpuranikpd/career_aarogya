@@ -10,9 +10,11 @@ import {
     PhoneIcon,
     DocumentTextIcon,
     CheckCircleIcon,
-    XCircleIcon,
     PrinterIcon
 } from "@heroicons/react/24/outline";
+import BackButton from "@/app/admin/components/BackButton";
+import StatusUpdater from "@/app/admin/components/StatusUpdater";
+import ScoreUpdater from "@/app/admin/components/ScoreUpdater";
 
 export default async function ApplicantDetails({ params }) {
     const session = await getServerSession(authOptions);
@@ -49,15 +51,16 @@ export default async function ApplicantDetails({ params }) {
     return (
         <div className="min-h-screen bg-gray-50 p-8">
             <div className="max-w-4xl mx-auto">
-                <Link href="/admin/dashboard" className="inline-flex items-center gap-2 text-gray-500 hover:text-primary mb-6 transition">
-                    <ArrowLeftIcon className="w-4 h-4" /> Back to Dashboard
-                </Link>
+                <BackButton />
 
                 {/* Header / Profile Card */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
                     <div className="flex flex-col md:flex-row justify-between items-start gap-6">
                         <div>
-                            <h1 className="text-3xl font-bold text-gray-900 mb-2">{user.name}</h1>
+                            <div className="flex items-center gap-4 mb-2">
+                                <h1 className="text-3xl font-bold text-gray-900">{user.name}</h1>
+                                <StatusUpdater userId={user.id} currentStatus={user.examStatus} />
+                            </div>
                             <div className="flex flex-wrap gap-4 text-gray-500 text-sm">
                                 <span className="flex items-center gap-2"><EnvelopeIcon className="w-4 h-4" /> {user.email}</span>
                                 {user.mobile && <span className="flex items-center gap-2"><PhoneIcon className="w-4 h-4" /> {user.mobile}</span>}
@@ -112,6 +115,7 @@ export default async function ApplicantDetails({ params }) {
                                             </p>
                                         </div>
                                         <div className="flex items-center gap-3">
+                                            <ScoreUpdater responseId={response.id} currentScore={response.score} />
                                             <a
                                                 href={`/admin/print/response/${response.id}`}
                                                 target="_blank"
