@@ -17,16 +17,16 @@ model User {
   jobPostId       String?  @db.ObjectId
   jobPost         JobPost? @relation(fields: [jobPostId], references: [id])
 
-  password        String?  // Hashed password for user login
-  
+  password String? // Hashed password for user login
+
   resetToken       String?
   resetTokenExpiry DateTime?
 
-  examStatus      String   @default("PENDING") // PENDING, PASSED, FAILED
-  responses       Response[]
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  applications    Application[]
+  examStatus   String        @default("PENDING") // PENDING, PASSED, FAILED
+  responses    Response[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  applications Application[]
 }
 
 model Superadmin {
@@ -36,67 +36,67 @@ model Superadmin {
 }
 
 model Exam {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  title     String
-  type      String   // YES_NO, WRITING, MIXED
-  questions Question[]
-  responses Response[]
-  jobPosts  JobPost[]
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  type        String // YES_NO, WRITING, MIXED
+  questions   Question[]
+  responses   Response[]
+  jobPosts    JobPost[]
   windowStart DateTime?
   windowEnd   DateTime?
 }
 
 type Question {
-  id       String
-  text     String
-  type     String?   // "RADIO", "TEXT", "RADIO_WITH_INPUT"
-  options  String[] 
-  correctAnswer String? 
+  id                  String
+  text                String
+  type                String? // "RADIO", "TEXT", "RADIO_WITH_INPUT"
+  options             String[]
+  correctAnswer       String?
   requiresExplanation Boolean? // If true, shows textarea when specific answer (usually Yes) is selected
-  explanationLabel String?
-  wordLimit Int?
+  explanationLabel    String?
+  wordLimit           Int?
 }
 
 model Response {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String   @db.ObjectId
-  user      User     @relation(fields: [userId], references: [id])
-  examId    String   @db.ObjectId
-  exam      Exam     @relation(fields: [examId], references: [id])
-  answers   Json     // Storing answers structure
-  score     Int?
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  user        User     @relation(fields: [userId], references: [id])
+  examId      String?  @db.ObjectId
+  exam        Exam?    @relation(fields: [examId], references: [id])
+  answers     Json // Storing answers structure
+  score       Int?
   submittedAt DateTime @default(now())
 }
 
 model JobPost {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
   title       String
   description String
   imageUrl    String?
   location    String?
-  type        String?  // Full-time, Part-time, Internship
+  type        String? // Full-time, Part-time, Internship
   salary      String?
-  
-  examId      String?  @db.ObjectId
-  exam        Exam?    @relation(fields: [examId], references: [id])
-  
-  applicants  User[]
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  isActive    Boolean  @default(true)
+
+  examId String? @db.ObjectId
+  exam   Exam?   @relation(fields: [examId], references: [id])
+
+  applicants User[]
+
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  isActive     Boolean       @default(true)
   applications Application[]
 }
 
 model Application {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String   @db.ObjectId
-  user      User     @relation(fields: [userId], references: [id])
-  jobPostId String   @db.ObjectId
-  jobPost   JobPost  @relation(fields: [jobPostId], references: [id])
-  
-  status    String   @default("PENDING") // PENDING, REVIEW_PENDING, SHORTLISTED, REJECTED, HIRED
-  
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String  @db.ObjectId
+  user      User    @relation(fields: [userId], references: [id])
+  jobPostId String  @db.ObjectId
+  jobPost   JobPost @relation(fields: [jobPostId], references: [id])
+
+  status String @default("PENDING") // PENDING, REVIEW_PENDING, SHORTLISTED, REJECTED, HIRED
+
   appliedAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
