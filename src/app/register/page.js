@@ -161,7 +161,7 @@ function RegisterForm() {
                         const res = await fetch('/api/auth/send-otp', {
                           method: 'POST',
                           headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ email: formData.email, type: 'register' })
+                          body: JSON.stringify({ email: formData.email.toLowerCase().trim(), type: 'register' })
                         });
                         const data = await res.json();
                         if (data.success) {

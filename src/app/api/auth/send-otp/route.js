@@ -6,11 +6,14 @@ import crypto from 'crypto';
 
 export async function POST(req) {
   try {
-    const { email, type } = await req.json();
+    const body = await req.json();
+    let { email, type } = body;
 
     if (!email) {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 });
     }
+    
+    email = email.toLowerCase().trim();
 
     // Check if user exists based on type
     const existingUser = await prisma.user.findUnique({ where: { email } });

@@ -22,13 +22,13 @@ export default function UserLogin() {
     try {
       const res = await signIn("user-login", {
         redirect: false,
-        email: formData.email,
+        email: formData.email.toLowerCase().trim(),
         password: formData.password,
         otp: formData.otp
       });
 
       if (res.error) {
-        setError("Invalid email or password");
+        setError(res.error); // Use actual error from server
         setLoading(false);
       } else {
         router.push("/dashboard"); // Redirect to User Dashboard
@@ -84,7 +84,7 @@ export default function UserLogin() {
                         const res = await fetch('/api/auth/send-otp', {
                           method: 'POST',
                           headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ email: formData.email, type: 'login' })
+                          body: JSON.stringify({ email: formData.email.toLowerCase().trim(), type: 'login' })
                         });
                         const data = await res.json();
                         if (data.success) {

@@ -35,20 +35,29 @@ export const authOptions = {
         otp: { label: "OTP", type: "text" }
       },
       async authorize(credentials) {
+        console.log("Authorize called with:", { 
+          email: credentials?.email, 
+          hasPassword: !!credentials?.password, 
+          hasOtp: !!credentials?.otp,
+          otpValue: credentials?.otp // Temporary log to check value
+        });
+
         if (!credentials?.email || !credentials?.password || !credentials?.otp) {
+           console.log("Missing credentials check failed");
            throw new Error("Missing credentials");
         }
         
-        const user = await prisma.user.findUnique({ where: { email: credentials.email } });
+        const email = credentials.email.toLowerCase().trim();
+        const user = await prisma.user.findUnique({ where: { email } });
         
         // 1. Verify Password
         if (!user || !user.password || user.password !== credentials.password) {
-           throw new Error("Invalid email or password");
+           throw new Error("Invalid password");
         }
 
         // 2. Verify OTP
         const otpRecord = await prisma.verificationCode.findUnique({
-          where: { email: credentials.email }
+          where: { email }
         });
 
         if (!otpRecord || otpRecord.code !== credentials.otp) {
@@ -60,7 +69,7 @@ export const authOptions = {
         }
 
         // 3. Clear OTP after successful login (optional, but good practice)
-        await prisma.verificationCode.delete({ where: { email: credentials.email } });
+        await prisma.verificationCode.delete({ where: { email } });
 
         return { id: user.id, email: user.email, name: user.name, role: "user" };
       }
