@@ -76,6 +76,7 @@ model JobPost {
   location    String?
   type        String? // Full-time, Part-time, Internship
   salary      String?
+  responsibilitiesPdf String?
 
   examId String? @db.ObjectId
   exam   Exam?   @relation(fields: [examId], references: [id])

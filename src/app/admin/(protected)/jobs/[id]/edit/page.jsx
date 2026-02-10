@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import JobImageUpload from "@/components/JobImageUpload";
+import JobPdfUpload from "@/components/JobPdfUpload";
 
 export default function EditJobPost({ params }) {
     const router = useRouter();
@@ -14,6 +15,7 @@ export default function EditJobPost({ params }) {
         title: "",
         description: "",
         imageUrl: "",
+        responsibilitiesPdf: "",
         location: "",
         type: "Full-time",
         salary: "",
@@ -42,6 +44,7 @@ export default function EditJobPost({ params }) {
                     title: data.title,
                     description: data.description,
                     imageUrl: data.imageUrl || "",
+                    responsibilitiesPdf: data.responsibilitiesPdf || "",
                     location: data.location,
                     type: data.type,
                     salary: data.salary || "",
@@ -139,6 +142,15 @@ export default function EditJobPost({ params }) {
                             {formData.imageUrl && (
                                 <div className="mt-2 text-xs text-green-600">Current Image Linked</div>
                             )}
+                        </div>
+
+                        {/* Responsibilities PDF */}
+                        <div>
+                            <label className="block text-sm font-medium mb-1 text-gray-700">Roles & Responsibilities (PDF/Docx)</label>
+                            <JobPdfUpload
+                                onUploadComplete={(url) => setFormData({ ...formData, responsibilitiesPdf: url })}
+                                initialUrl={formData.responsibilitiesPdf}
+                            />
                         </div>
 
                         <div className="grid grid-cols-2 gap-6">

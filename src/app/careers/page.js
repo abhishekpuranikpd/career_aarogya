@@ -32,8 +32,8 @@ export default async function CareersPage() {
       <section className="container mx-auto px-4 -mt-10">
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {jobs.map(job => (
-            <Link href={`/careers/${job.id}`} key={job.id} className="group block bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
-              <div className="relative h-48 bg-gray-200">
+            <div key={job.id} className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 flex flex-col">
+              <Link href={`/careers/${job.id}`} className="block relative h-48 bg-gray-200">
                 {job.imageUrl ? (
                   <Image src={job.imageUrl} alt={job.title} fill className="object-cover" />
                 ) : (
@@ -44,11 +44,13 @@ export default async function CareersPage() {
                 <div className="absolute top-4 right-4 bg-white/90 backdrop-blur text-xs font-bold px-3 py-1 rounded-full text-gray-800 uppercase tracking-wide">
                   {job.type || 'Full-time'}
                 </div>
-              </div>
+              </Link>
               
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 group-hover:text-primary transition-colors mb-2">{job.title}</h3>
-                <div className="space-y-2 mb-6">
+              <div className="p-6 flex flex-col flex-grow">
+                <Link href={`/careers/${job.id}`} className="block">
+                  <h3 className="text-xl font-bold text-gray-900 group-hover:text-primary transition-colors mb-2">{job.title}</h3>
+                </Link>
+                <div className="space-y-2 mb-6 flex-grow">
                   <div className="flex items-center text-gray-500 text-sm">
                     <MapPinIcon className="w-4 h-4 mr-2" />
                     {job.location || 'Remote'}
@@ -60,11 +62,29 @@ export default async function CareersPage() {
                     </div>
                   )}
                 </div>
-                <span className="inline-block w-full text-center py-3 bg-gray-50 text-gray-600 font-semibold rounded-lg group-hover:bg-primary group-hover:text-white transition-colors">
-                  View Details
-                </span>
+
+                <div className="space-y-3 mt-auto">
+                  {job.responsibilitiesPdf && (
+                    <a 
+                      href={job.responsibilitiesPdf}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-red-600 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition-colors gap-2"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                      View Roles & Responsibilities
+                    </a>
+                  )}
+                  
+                  <Link 
+                    href={`/careers/${job.id}`}
+                    className="block w-full text-center py-3 bg-gray-50 text-gray-600 font-semibold rounded-lg hover:bg-primary hover:text-white transition-colors"
+                  >
+                    View Details
+                  </Link>
+                </div>
               </div>
-            </Link>
+            </div>
           ))}
         </div>
         

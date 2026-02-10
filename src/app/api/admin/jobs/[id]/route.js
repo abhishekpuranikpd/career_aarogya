@@ -32,7 +32,7 @@ export async function PUT(req, { params }) {
 
   try {
     const body = await req.json();
-    const { title, description, imageUrl, location, type, salary, examId, isActive } = body;
+    const { title, description, imageUrl, responsibilitiesPdf, location, type, salary, examId, isActive } = body;
 
     const job = await prisma.jobPost.update({
       where: { id },
@@ -40,6 +40,7 @@ export async function PUT(req, { params }) {
         title,
         description,
         imageUrl,
+        responsibilitiesPdf,
         location,
         type,
         salary,

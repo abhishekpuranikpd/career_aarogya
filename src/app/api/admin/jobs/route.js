@@ -9,13 +9,14 @@ export async function POST(req) {
 
   try {
     const body = await req.json();
-    const { title, description, imageUrl, location, type, salary, examId } = body;
+    const { title, description, imageUrl, responsibilitiesPdf, location, type, salary, examId } = body;
 
     const job = await prisma.jobPost.create({
       data: {
         title,
         description,
         imageUrl,
+        responsibilitiesPdf,
         location,
         type,
         salary,

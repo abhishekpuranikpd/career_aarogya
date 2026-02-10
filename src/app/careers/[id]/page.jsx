@@ -100,7 +100,18 @@ export default async function JobDetailsPage({ params }) {
                             </li>
                         </ul>
 
-                        <div className="mt-6">
+                        <div className="mt-6 space-y-3">
+                            {job.responsibilitiesPdf && (
+                                <a
+                                    href={job.responsibilitiesPdf}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-red-600 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition-colors gap-2"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                                    View Roles & Responsibilities
+                                </a>
+                            )}
                             <ApplyButton jobId={job.id} jobTitle={job.title} />
                         </div>
                     </div>
