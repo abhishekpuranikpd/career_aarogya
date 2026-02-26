@@ -7,7 +7,7 @@ require('dotenv').config({ path: '.env.local' });
 
 const prisma = new PrismaClient();
 
-const JOB_ID = "696b35ea5c33a2d30b8920d5";
+const JOB_ID = "698afd3e18dd6ca1b732cf40";
 const SUPERADMIN_EMAIL = "abhishekpuranikpd@gmail.com";
 
 // Setup Transporter
@@ -43,20 +43,38 @@ async function main() {
         console.log(`📋 Job Found: ${job.title}`);
         console.log(`📝 Exam: ${job.exam ? job.exam.title : 'No Exam Linked'}`);
 
-        // 2. Fetch Applicants
-        // Data Check: 232 users found in User table with this jobPostId
+        // 2. Fetch Applicants for this job
         const applicants = await prisma.user.findMany({
             where: { jobPostId: JOB_ID },
-            select: { email: true, name: true }
+            select: { id: true, email: true, name: true }
         });
 
-        console.log(`👥 Found ${applicants.length} applicants in User table.`);
+        console.log(`👥 Found ${applicants.length} applicants for this job.`);
 
-        // Filter valid emails
-        const validApplicants = applicants.filter(user => user && user.email && user.email.includes('@'));
-        
-        // Remove duplicates
+        // 3. Find who already submitted the exam from this job applicant pool
+        let examResponderIds = new Set();
+        if (job.exam) {
+            // Get user IDs from responses for this exam, but only for users in our applicants list
+            const applicantIds = applicants.map(u => u.id);
+            const responses = await prisma.response.findMany({
+                where: { 
+                    examId: job.exam.id,
+                    userId: { in: applicantIds }
+                },
+                select: { userId: true }
+            });
+            responses.forEach(r => examResponderIds.add(r.userId));
+            console.log(`✍️  ${examResponderIds.size} applicants from this job already submitted the exam.`);
+        }
+
+        // 4. Filter: only those who haven't written the exam
+        const pendingApplicants = applicants.filter(u => !examResponderIds.has(u.id));
+        console.log(`⏳ ${pendingApplicants.length} applicants have NOT written the exam yet.`);
+
+        // Filter valid emails & remove duplicates
+        const validApplicants = pendingApplicants.filter(user => user && user.email && user.email.includes('@'));
         const uniqueEmails = [...new Set(validApplicants.map(u => u.email))];
+        const emailToName = Object.fromEntries(validApplicants.map(u => [u.email, u.name]));
         console.log(`📧 Unique Emails to notify: ${uniqueEmails.length}`);
 
         // 3. Email Template
@@ -156,7 +174,7 @@ async function main() {
                     from: `"Aarogya Aadhar Exams" <${process.env.SMTP_USER || process.env.EMAIL_USER}>`,
                     to: email,
                     subject: `IMPORTANT: Exam Schedule & Login Link`,
-                    html: getHtml('Candidate')
+                    html: getHtml(emailToName[email] || 'Candidate')
                 });
                 console.log(`✅ Sent to ${email}`);
                 sentCount++;
