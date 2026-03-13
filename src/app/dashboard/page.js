@@ -4,6 +4,7 @@ import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 import { CheckBadgeIcon, ClockIcon, XCircleIcon } from "@heroicons/react/24/outline"
+import AssignmentCard from "./AssignmentCard"
 
 export const dynamic = 'force-dynamic';
 
@@ -26,6 +27,17 @@ export default async function UserDashboard() {
   });
 
   if (!user) return <div>User not found</div>;
+
+  // Assignment logic: find matching active assignment for this user's role
+  const userPosition = (user.positionApplied || user.jobPost?.title || "").toLowerCase();
+  const allAssignments = await prisma.assignment.findMany({ where: { isActive: true } });
+  const matchedAssignment = allAssignments.find(a => userPosition.includes(a.targetRole.toLowerCase())) || null;
+
+  const assignmentSubmission = matchedAssignment
+    ? await prisma.assignmentSubmission.findUnique({
+        where: { userId_assignmentId: { userId: user.id, assignmentId: matchedAssignment.id } }
+      })
+    : null;
 
   const latestResponse = user.responses[0];
   const pendingExam = user.jobPost?.examId && (!latestResponse || latestResponse.examId !== user.jobPost.examId);
@@ -213,6 +225,16 @@ export default async function UserDashboard() {
            )}
 
         </div>
+
+        {/* Assignment Tasks — shown only for matched interns */}
+        {matchedAssignment && (
+          <div className="mt-8">
+            <AssignmentCard
+              assignment={matchedAssignment}
+              initialSubmission={assignmentSubmission}
+            />
+          </div>
+        )}
 
       </div>
     </div>

@@ -27,6 +27,7 @@ model User {
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   applications Application[]
+  submissions  AssignmentSubmission[]
 }
 
 model Superadmin {
@@ -110,4 +111,30 @@ model VerificationCode {
   code      String
   expires   DateTime
   createdAt DateTime @default(now())
+}
+
+model Assignment {
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  title            String
+  description      String
+  questions        Json     // Array of question objects {id, text, type, options}
+  taskInstructions String   // Reel + Poster task instructions
+  targetRole       String   // e.g. "Digital Marketing"
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  submissions      AssignmentSubmission[]
+}
+
+model AssignmentSubmission {
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  assignmentId String     @db.ObjectId
+  assignment   Assignment @relation(fields: [assignmentId], references: [id])
+  userId       String     @db.ObjectId
+  user         User       @relation(fields: [userId], references: [id])
+  reelLink     String?
+  posterLink   String?
+  submittedAt  DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@unique([userId, assignmentId])
 }

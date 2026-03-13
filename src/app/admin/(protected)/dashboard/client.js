@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { 
   MagnifyingGlassIcon, 
@@ -18,7 +18,8 @@ import {
   CheckBadgeIcon,
   Bars3Icon,
   XMarkIcon,
-  RocketLaunchIcon
+  RocketLaunchIcon,
+  PaperClipIcon
 } from "@heroicons/react/24/outline";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 
@@ -196,6 +197,26 @@ export default function DashboardClient({ initialData, baseUrl }) {
   const [jobPage, setJobPage] = useState(1);
   const [jobStatusFilter, setJobStatusFilter] = useState("All");
 
+  // --- ATTACHMENT TASKS STATE ---
+  const [attachmentSubmissions, setAttachmentSubmissions] = useState([]);
+  const [attachmentLoading, setAttachmentLoading] = useState(false);
+  const [attachmentLoaded, setAttachmentLoaded] = useState(false);
+  const [attachmentSearch, setAttachmentSearch] = useState("");
+
+  useEffect(() => {
+    if (activeTab === "Attachment Tasks" && !attachmentLoaded) {
+      setAttachmentLoading(true);
+      fetch("/api/admin/assignments/submissions")
+        .then(r => r.json())
+        .then(data => {
+          setAttachmentSubmissions(data.submissions || []);
+          setAttachmentLoaded(true);
+        })
+        .catch(console.error)
+        .finally(() => setAttachmentLoading(false));
+    }
+  }, [activeTab, attachmentLoaded]);
+
   // Keep actions same, but update local state references
   const handleDeleteJob = async (jobId) => {
     if(!window.confirm("Are you sure you want to delete this job post?")) return;
@@ -350,6 +371,7 @@ export default function DashboardClient({ initialData, baseUrl }) {
             <SidebarItem name="Careers" icon={BriefcaseIcon} />
             <SidebarItem name="Exams" icon={AcademicCapIcon} />
             <SidebarItem name="Applicants" icon={UserGroupIcon} />
+            <SidebarItem name="Attachment Tasks" icon={PaperClipIcon} />
           </div>
 
           <div className="mt-auto pt-6 border-t border-gray-100">
@@ -909,7 +931,176 @@ export default function DashboardClient({ initialData, baseUrl }) {
            </div>
         )}
 
+        {/* ATTACHMENT TASKS TAB */}
+        {activeTab === "Attachment Tasks" && (
+          <div className="space-y-6 animate-fadeIn pb-12">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">Attachment Task Submissions</h3>
+                <p className="text-sm text-gray-500 mt-0.5">Intern Reel & Poster submissions tagged @aarogyaaadhar</p>
+              </div>
+              <div className="relative w-full sm:w-auto">
+                <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search by name or email..."
+                  className="pl-10 pr-4 py-2 border rounded-xl focus:ring-2 focus:ring-purple-200 outline-none text-sm w-full sm:w-72 bg-gray-50 focus:bg-white transition"
+                  value={attachmentSearch}
+                  onChange={(e) => setAttachmentSearch(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* Stats bar */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex items-center gap-4">
+                <div className="w-10 h-10 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                  <PaperClipIcon className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-gray-900">{attachmentSubmissions.length}</p>
+                  <p className="text-xs text-gray-500 font-medium">Total Submissions</p>
+                </div>
+              </div>
+              <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex items-center gap-4">
+                <div className="w-10 h-10 bg-pink-100 text-pink-600 rounded-full flex items-center justify-center flex-shrink-0">
+                  <span className="text-sm">🎬</span>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {attachmentSubmissions.filter(s => s.reelLink).length}
+                  </p>
+                  <p className="text-xs text-gray-500 font-medium">Reels Submitted</p>
+                </div>
+              </div>
+              <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex items-center gap-4">
+                <div className="w-10 h-10 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center flex-shrink-0">
+                  <span className="text-sm">🖼️</span>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {attachmentSubmissions.filter(s => s.posterLink).length}
+                  </p>
+                  <p className="text-xs text-gray-500 font-medium">Posters Submitted</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Table */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+              {attachmentLoading ? (
+                <div className="p-16 text-center">
+                  <div className="inline-flex items-center gap-2 text-gray-400">
+                    <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                    </svg>
+                    Loading submissions...
+                  </div>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm">
+                    <thead className="bg-gray-50 text-xs text-gray-500 uppercase tracking-wider border-b border-gray-100">
+                      <tr>
+                        <th className="px-6 py-4 font-semibold">Intern</th>
+                        <th className="px-6 py-4 font-semibold">Assignment</th>
+                        <th className="px-6 py-4 font-semibold">🎬 Reel Link</th>
+                        <th className="px-6 py-4 font-semibold">🖼️ Poster Link</th>
+                        <th className="px-6 py-4 font-semibold">Submitted</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                      {attachmentSubmissions
+                        .filter(s => {
+                          const search = attachmentSearch.toLowerCase();
+                          return (
+                            !search ||
+                            s.user?.name?.toLowerCase().includes(search) ||
+                            s.user?.email?.toLowerCase().includes(search)
+                          );
+                        })
+                        .map(sub => (
+                          <tr key={sub.id} className="hover:bg-purple-50/30 transition-colors group">
+                            <td className="px-6 py-4">
+                              <div className="font-semibold text-gray-900">{sub.user?.name || "—"}</div>
+                              <div className="text-xs text-gray-500">{sub.user?.email}</div>
+                              {sub.user?.mobile && (
+                                <div className="text-xs text-gray-400">{sub.user.mobile}</div>
+                              )}
+                              <div className="mt-1">
+                                <span className="px-2 py-0.5 bg-purple-50 text-purple-700 rounded-full text-xs font-medium border border-purple-100">
+                                  {sub.user?.positionApplied || sub.user?.jobPost?.title || "—"}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <span className="text-xs font-medium text-gray-700">{sub.assignment?.title}</span>
+                              <div className="text-xs text-gray-400 mt-0.5">Role: {sub.assignment?.targetRole}</div>
+                            </td>
+                            <td className="px-6 py-4">
+                              {sub.reelLink ? (
+                                <a
+                                  href={sub.reelLink}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-pink-50 text-pink-700 rounded-lg text-xs font-semibold hover:bg-pink-100 transition border border-pink-100 max-w-[200px] truncate"
+                                >
+                                  🎬 View Reel
+                                </a>
+                              ) : (
+                                <span className="text-xs text-gray-300 italic">Not submitted</span>
+                              )}
+                            </td>
+                            <td className="px-6 py-4">
+                              {sub.posterLink ? (
+                                <a
+                                  href={sub.posterLink}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 text-orange-700 rounded-lg text-xs font-semibold hover:bg-orange-100 transition border border-orange-100 max-w-[200px] truncate"
+                                >
+                                  🖼️ View Poster
+                                </a>
+                              ) : (
+                                <span className="text-xs text-gray-300 italic">Not submitted</span>
+                              )}
+                            </td>
+                            <td className="px-6 py-4 text-xs text-gray-500 whitespace-nowrap">
+                              {new Date(sub.submittedAt).toLocaleDateString('en-IN', {
+                                day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata'
+                              })}
+                              <div className="text-gray-400">
+                                {new Date(sub.submittedAt).toLocaleTimeString('en-IN', {
+                                  hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata'
+                                })}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                  {attachmentSubmissions.filter(s => {
+                    const search = attachmentSearch.toLowerCase();
+                    return !search || s.user?.name?.toLowerCase().includes(search) || s.user?.email?.toLowerCase().includes(search);
+                  }).length === 0 && (
+                    <div className="p-16 text-center">
+                      <div className="w-16 h-16 bg-purple-50 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">📎</div>
+                      <h3 className="text-gray-700 font-semibold mb-1">No submissions yet</h3>
+                      <p className="text-gray-400 text-sm">
+                        Intern Reel & Poster submissions will appear here once submitted.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
       </main>
+
     </div>
   );
 }
