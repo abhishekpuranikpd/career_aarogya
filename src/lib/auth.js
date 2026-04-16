@@ -1,6 +1,7 @@
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { prisma } from "./prisma"
+import bcrypt from "bcryptjs"
 
 export const authOptions = {
   adapter: PrismaAdapter(prisma),
@@ -32,19 +33,11 @@ export const authOptions = {
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
-        otp: { label: "OTP", type: "text" }
+        pin: { label: "4-Digit PIN", type: "password" }
       },
       async authorize(credentials) {
-        console.log("Authorize called with:", { 
-          email: credentials?.email, 
-          hasPassword: !!credentials?.password, 
-          hasOtp: !!credentials?.otp,
-          otpValue: credentials?.otp // Temporary log to check value
-        });
-
-        if (!credentials?.email || !credentials?.password || !credentials?.otp) {
-           console.log("Missing credentials check failed");
-           throw new Error("Missing credentials");
+        if (!credentials?.email || !credentials?.password || !credentials?.pin) {
+          throw new Error("Missing credentials");
         }
         
         const email = credentials.email.toLowerCase().trim();
@@ -52,24 +45,20 @@ export const authOptions = {
         
         // 1. Verify Password
         if (!user || !user.password || user.password !== credentials.password) {
-           throw new Error("Invalid password");
+          throw new Error("Invalid email or password");
         }
 
-        // 2. Verify OTP
-        const otpRecord = await prisma.verificationCode.findUnique({
-          where: { email }
-        });
-
-        if (!otpRecord || otpRecord.code !== credentials.otp) {
-          throw new Error("Invalid OTP");
+        // 2. Check if PIN is set
+        if (!user.pin) {
+          // Return special error so frontend can redirect to set-pin page
+          throw new Error("PIN_NOT_SET");
         }
 
-        if (new Date() > otpRecord.expires) {
-          throw new Error("OTP has expired");
+        // 3. Verify PIN
+        const isPinValid = await bcrypt.compare(credentials.pin, user.pin);
+        if (!isPinValid) {
+          throw new Error("Invalid PIN");
         }
-
-        // 3. Clear OTP after successful login (optional, but good practice)
-        await prisma.verificationCode.delete({ where: { email } });
 
         return { id: user.id, email: user.email, name: user.name, role: "user" };
       }

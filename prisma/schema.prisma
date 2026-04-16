@@ -19,6 +19,12 @@ model User {
 
   password String? // Hashed password for user login
 
+  // 4-digit PIN system
+  pin         String? // bcrypt-hashed 4-digit PIN
+  pinQuestion String? // Security question text
+  pinAnswer   String? // bcrypt-hashed security answer
+  referenceId String? // Auto-generated unique reference ID e.g. "SN4821"
+
   resetToken       String?
   resetTokenExpiry DateTime?
 
@@ -78,6 +84,17 @@ model JobPost {
   type        String? // Full-time, Part-time, Internship
   salary      String?
   responsibilitiesPdf String?
+  applicationProcess  String?
+
+  // Reference ID & WhatsApp integration
+  referenceIdPrefix  String?   // 2-4 char prefix, e.g. "SN" for Staff Nurse
+  whatsappGroupLink  String?   // WhatsApp group invite link
+
+  // Important dates for applicants
+  examStartDate DateTime?
+  resultDate    DateTime?
+  inductionDate DateTime?
+  joiningDate   DateTime?
 
   examId String? @db.ObjectId
   exam   Exam?   @relation(fields: [examId], references: [id])

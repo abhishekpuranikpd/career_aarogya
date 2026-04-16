@@ -17,14 +17,22 @@ export default function CreateJobPost() {
     location: "Remote",
     type: "Full-time",
     salary: "",
-    examId: ""
+    examId: "",
+    // New fields
+    referenceIdPrefix: "",
+    whatsappGroupLink: "",
+    examStartDate: "",
+    applicationStartDate: "",
+    resultDate: "",
+    inductionDate: "",
+    joiningDate: "",
+    applicationProcess: "",
   });
   const [exams, setExams] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Fetch exams to link
-    fetch("/api/exam") // We need to make sure this route lists all exams
+    fetch("/api/exam")
       .then(res => res.json())
       .then(data => setExams(data))
       .catch(err => console.error("Failed to fetch exams", err));
@@ -45,7 +53,8 @@ export default function CreateJobPost() {
         alert("Job Post created successfully!");
         router.push("/admin/dashboard");
       } else {
-        alert("Failed to create job");
+        const data = await res.json();
+        alert("Failed to create job: " + (data.error || "Unknown error"));
       }
     } catch (err) {
       alert("Error: " + err.message);
@@ -99,7 +108,7 @@ export default function CreateJobPost() {
 
             {/* Responsibilities PDF */}
             <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700">Roles & Responsibilities (PDF/Docx)</label>
+              <label className="block text-sm font-medium mb-1 text-gray-700">Roles &amp; Responsibilities (PDF/Docx)</label>
               <JobPdfUpload 
                 onUploadComplete={(url) => setFormData({...formData, responsibilitiesPdf: url})} 
                 initialUrl={formData.responsibilitiesPdf}
@@ -135,7 +144,7 @@ export default function CreateJobPost() {
               </div>
             </div>
 
-            {/* Salary (Optional) */}
+            {/* Salary */}
             <div>
               <label className="block text-sm font-medium mb-1 text-gray-700">Salary Range (Optional)</label>
               <input 
@@ -145,6 +154,112 @@ export default function CreateJobPost() {
                 value={formData.salary}
                 onChange={e => setFormData({...formData, salary: e.target.value})}
               />
+            </div>
+
+            {/* ── NEW: Applicant Reference & Communication ── */}
+            <div className="p-5 bg-green-50 rounded-xl border border-green-100 space-y-4">
+              <h3 className="font-semibold text-green-900">Applicant Reference & Communication</h3>
+
+              <div className="grid grid-cols-2 gap-4">
+                {/* Reference ID Prefix */}
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-gray-700">
+                    Reference ID Prefix <span className="text-xs text-gray-400">(2–4 letters, e.g. &quot;SN&quot; for Staff Nurse)</span>
+                  </label>
+                  <input 
+                    type="text" 
+                    maxLength={4}
+                    className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-green-200 outline-none uppercase"
+                    placeholder="e.g. SN"
+                    value={formData.referenceIdPrefix}
+                    onChange={e => setFormData({...formData, referenceIdPrefix: e.target.value.toUpperCase().replace(/[^A-Z]/g, '')})}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Applicant IDs will be like: {formData.referenceIdPrefix || "AA"}4821</p>
+                </div>
+
+                {/* WhatsApp Group Link */}
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-gray-700">
+                    WhatsApp Group Link
+                  </label>
+                  <input 
+                    type="url" 
+                    className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-green-200 outline-none"
+                    placeholder="https://chat.whatsapp.com/..."
+                    value={formData.whatsappGroupLink}
+                    onChange={e => setFormData({...formData, whatsappGroupLink: e.target.value})}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* ── NEW: Important Dates ── */}
+            <div className="p-5 bg-amber-50 rounded-xl border border-amber-100 space-y-4">
+              <h3 className="font-semibold text-amber-900">📅 Important Dates for Applicants</h3>
+              <p className="text-xs text-amber-700">These dates appear on the applicant&apos;s hall ticket PDF.</p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-gray-700">Application Starts On</label>
+                  <input 
+                    type="datetime-local" 
+                    className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-amber-200 outline-none text-sm"
+                    value={formData.applicationStartDate}
+                    onChange={e => setFormData({...formData, applicationStartDate: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-gray-700">Exam Starts On</label>
+                  <input 
+                    type="datetime-local" 
+                    className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-amber-200 outline-none text-sm"
+                    value={formData.examStartDate}
+                    onChange={e => setFormData({...formData, examStartDate: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-gray-700">Result Declared On</label>
+                  <input 
+                    type="datetime-local" 
+                    className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-amber-200 outline-none text-sm"
+                    value={formData.resultDate}
+                    onChange={e => setFormData({...formData, resultDate: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-gray-700">Induction Date</label>
+                  <input 
+                    type="datetime-local" 
+                    className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-amber-200 outline-none text-sm"
+                    value={formData.inductionDate}
+                    onChange={e => setFormData({...formData, inductionDate: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-gray-700">Joining Date</label>
+                  <input 
+                    type="datetime-local" 
+                    className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-amber-200 outline-none text-sm"
+                    value={formData.joiningDate}
+                    onChange={e => setFormData({...formData, joiningDate: e.target.value})}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* ── NEW: Application Process (HTML Supported) ── */}
+            <div className="p-5 bg-purple-50 rounded-xl border border-purple-100 space-y-4">
+              <h3 className="font-semibold text-purple-900 text-lg flex items-center gap-2">
+                📋 Application Process (HTML Supported)
+              </h3>
+              <p className="text-xs text-purple-700">Enter the steps applicants should follow. HTML is allowed for custom formatting.</p>
+              
+              <textarea 
+                className="w-full border p-4 rounded-lg focus:ring-2 focus:ring-purple-200 outline-none min-h-[200px] font-mono text-sm leading-relaxed whitespace-pre-wrap"
+                placeholder="<ol><li>Click Apply...</li><li>Upload Doc...</li></ol>"
+                value={formData.applicationProcess}
+                onChange={e => setFormData({...formData, applicationProcess: e.target.value})}
+              ></textarea>
             </div>
 
             {/* Linked Exam */}

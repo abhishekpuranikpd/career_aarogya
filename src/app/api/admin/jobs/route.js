@@ -9,7 +9,11 @@ export async function POST(req) {
 
   try {
     const body = await req.json();
-    const { title, description, imageUrl, responsibilitiesPdf, location, type, salary, examId } = body;
+    const { 
+      title, description, imageUrl, responsibilitiesPdf, applicationProcess, location, type, salary, examId,
+      // New fields
+      whatsappGroupLink, referenceIdPrefix, applicationStartDate, examStartDate, resultDate, inductionDate, joiningDate
+    } = body;
 
     const job = await prisma.jobPost.create({
       data: {
@@ -17,10 +21,18 @@ export async function POST(req) {
         description,
         imageUrl,
         responsibilitiesPdf,
+        applicationProcess,
         location,
         type,
         salary,
-        examId: examId || null
+        exam: examId ? { connect: { id: examId } } : undefined,
+        whatsappGroupLink: whatsappGroupLink || null,
+        referenceIdPrefix: referenceIdPrefix ? referenceIdPrefix.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 4) : null,
+        applicationStartDate: applicationStartDate ? new Date(applicationStartDate) : null,
+        examStartDate: examStartDate ? new Date(examStartDate) : null,
+        resultDate: resultDate ? new Date(resultDate) : null,
+        inductionDate: inductionDate ? new Date(inductionDate) : null,
+        joiningDate: joiningDate ? new Date(joiningDate) : null,
       }
     });
 

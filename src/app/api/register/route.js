@@ -2,6 +2,21 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { transporter, mailOptions } from '@/lib/email';
 
+// Generate unique reference ID
+async function generateReferenceId(prefix = 'AA') {
+  const safePrefix = (prefix || 'AA').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 4) || 'AA';
+  let referenceId;
+  let attempts = 0;
+  do {
+    const digits = Math.floor(1000 + Math.random() * 9000).toString();
+    referenceId = `${safePrefix}${digits}`;
+    const existing = await prisma.user.findFirst({ where: { referenceId } });
+    if (!existing) break;
+    attempts++;
+  } while (attempts < 20);
+  return referenceId;
+}
+
 export async function POST(req) {
   try {
     const data = await req.json();
@@ -16,6 +31,15 @@ export async function POST(req) {
       return NextResponse.json({ error: 'User already registered' }, { status: 400 });
     }
 
+    // Fetch job post for prefix, WhatsApp link, and dates
+    let jobPost = null;
+    if (jobPostId) {
+      jobPost = await prisma.jobPost.findUnique({ where: { id: jobPostId } });
+    }
+
+    const prefix = jobPost?.referenceIdPrefix || 'AA';
+    const referenceId = await generateReferenceId(prefix);
+
     const user = await prisma.user.create({
       data: {
         name,
@@ -23,33 +47,42 @@ export async function POST(req) {
         mobile,
         resumeUrl,
         positionApplied: position,
-        jobPostId: jobPostId || null,
-        password: password // In prod, hash this!
+        jobPost: jobPostId ? { connect: { id: jobPostId } } : undefined,
+        password: password,
+        referenceId,
       },
       include: {
-        jobPost: true // Include job post to check for linked exam
+        jobPost: true
       }
     });
 
-    // Check for linked exam
-    let nextStep = "/exam"; // Default
-    if (user.jobPost && user.jobPost.examId) {
-      nextStep = `/exam/${user.jobPost.examId}`;
+    // Send welcome email
+    try {
+      await transporter.sendMail({
+        ...mailOptions,
+        to: email,
+        subject: `Registration Successful - Aarogya Aadhar`,
+        text: `Dear ${name},\n\nThank you for registering for the ${position} position at Aarogya Aadhar. Your Reference ID is ${referenceId}.\n\nPlease proceed to the dashboard: ${process.env.NEXT_PUBLIC_BASE_URL || 'https://career.aarogyaaadhar.com'}/dashboard\n\nRegards,\nAarogya Aadhar Team`,
+        html: `<h1>Registration Successful</h1><p>Dear ${name},</p><p>Thank you for registering for the <strong>${position}</strong> position at Aarogya Aadhar.</p><p>Your Reference ID is: <strong>${referenceId}</strong></p><p><a href="${process.env.NEXT_PUBLIC_BASE_URL || 'https://career.aarogyaaadhar.com'}/dashboard" style="background-color:#1e40af;color:white;padding:10px 20px;text-decoration:none;border-radius:5px;">Go to Dashboard</a></p><br/><p>Regards,<br/>Aarogya Aadhar Team</p>`,
+      });
+    } catch (emailErr) {
+      console.error('Email error (non-fatal):', emailErr);
     }
 
-    // Send email
-    await transporter.sendMail({
-      ...mailOptions,
-      to: email,
-      subject: `Registration Successful - Aarogya Aadhar`,
-      text: `Dear ${name},\n\nThank you for registering for the ${position} position at Aarogya Aadhar. Your application ID is ${user.id}.\n\nPlease proceed to the mandatory assessment here: ${process.env.NEXT_PUBLIC_BASE_URL || 'https://career.aarogyaaadhar.com'}/dashboard\n\nRegards,\nAarogya Aadhar Team`,
-      html: `<h1>Registration Successful</h1><p>Dear ${name},</p><p>Thank you for registering for the <strong>${position}</strong> position at Aarogya Aadhar.</p><p>Your application ID is: <strong>${user.id}</strong></p><p>You must now complete the online assessment to finalize your application.</p><p><a href="${process.env.NEXT_PUBLIC_BASE_URL || 'https://career.aarogyaaadhar.com'}/dashboard" style="background-color:#1e40af;color:white;padding:10px 20px;text-decoration:none;border-radius:5px;">Start Assessment</a></p><br/><p>Regards,<br/>Aarogya Aadhar Team</p>`,
+    return NextResponse.json({
+      success: true,
+      user: { id: user.id, name: user.name, email: user.email, mobile: user.mobile, positionApplied: user.positionApplied },
+      referenceId,
+      whatsappGroupLink: jobPost?.whatsappGroupLink || null,
+      applicationStartDate: jobPost?.applicationStartDate || null,
+      examStartDate: jobPost?.examStartDate || null,
+      resultDate: jobPost?.resultDate || null,
+      inductionDate: jobPost?.inductionDate || null,
+      joiningDate: jobPost?.joiningDate || null,
+      applicationProcess: jobPost?.applicationProcess || null,
+      jobType: jobPost?.type || null,
+      jobLocation: jobPost?.location || null,
     });
-
-    // Clear OTP
-    await prisma.verificationCode.delete({ where: { email } });
-
-    return NextResponse.json({ success: true, user, redirectUrl: nextStep });
   } catch (error) {
     console.error('Registration error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
