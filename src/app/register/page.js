@@ -40,21 +40,10 @@ function SuccessView({ data, pin }) {
     doc.setFillColor(30, 64, 175);
     doc.rect(0, 0, pw, 30, "F");
 
-    // Add Logo from Cloudinary
-    try {
-      doc.addImage(
-        "https://res.cloudinary.com/dorreici1/image/upload/v1763636388/420a5318-cb6c-4915-a728-979d8973a9d1.png",
-        "PNG",
-        10, 5, 15, 15
-      );
-    } catch (e) {
-      console.error("Logo failed to load:", e);
-    }
-
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(14);
     doc.setFont("helvetica", "bold");
-    doc.text("AAROGYA AADHAR", pw / 2, 12, { align: "center" });
+    doc.text("LIVO AAROGYA AADHAR PVT LTD", pw / 2, 12, { align: "center" });
     doc.setFontSize(9);
     doc.setFont("helvetica", "normal");
     doc.text("Career Application — Registration & Induction Document", pw / 2, 20, { align: "center" });
@@ -181,7 +170,7 @@ function SuccessView({ data, pin }) {
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(7);
     doc.setFont("helvetica", "normal");
-    doc.text("Aarogya Aadhar Pvt. Ltd. | info@aarogyaaadhar.com | This is a system generated document.", pw / 2, ph - 5, { align: "center" });
+    doc.text("Livo Aarogya Aadhar PVT LTD | info@aarogyaaadhar.com | This is a system generated document.", pw / 2, ph - 5, { align: "center" });
 
     doc.save(`RegistrationDocument_${data.referenceId || "AArogya"}.pdf`);
   };

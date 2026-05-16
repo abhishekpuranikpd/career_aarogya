@@ -22,7 +22,7 @@ export async function PUT(req, { params }) {
     try {
         const { transporter, mailOptions } = await import('@/lib/email');
         
-        let subject = `Application Status Update - Aarogya Aadhar`;
+        let subject = `Application Status Update - Livo Aarogya Aadhar PVT LTD`;
         let message = `Dear ${updatedUser.name},\n\nYour application status for ${updatedUser.positionApplied || 'your role'} has been updated to: ${status}.\n\n`;
 
         if (status === 'INTERVIEW') {
@@ -35,7 +35,7 @@ export async function PUT(req, { params }) {
             message += `You have successfully passed the assessment phase. We will review your profile and get back to you.\n\n`;
         }
 
-        message += `You can check your status anytime on your dashboard: ${process.env.NEXT_PUBLIC_BASE_URL}/dashboard\n\nRegards,\nAarogya Aadhar Team`;
+        message += `You can check your status anytime on your dashboard: ${process.env.NEXT_PUBLIC_BASE_URL}/dashboard\n\nRegards,\nLivo Aarogya Aadhar Team`;
 
         await transporter.sendMail({
             ...mailOptions,
@@ -48,7 +48,7 @@ export async function PUT(req, { params }) {
                    ${status === 'HIRED' ? '<p style="color:green;font-weight:bold">🎉 Congratulations! You have been Hired.</p>' : ''}
                    ${status === 'REJECTED' ? '<p>Thank you for your interest. We have decided to move forward with other candidates.</p>' : ''}
                    <p>Login to checks details: <a href="${process.env.NEXT_PUBLIC_BASE_URL}/dashboard">Dashboard</a></p>
-                   <br/><p>Regards,<br/>Aarogya Aadhar Team</p>`
+                   <br/><p>Regards,<br/>Livo Aarogya Aadhar Team</p>`
         });
     } catch (emailError) {
         console.error("Failed to send status email:", emailError);

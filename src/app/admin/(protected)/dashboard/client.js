@@ -307,11 +307,12 @@ export default function DashboardClient({ initialData, baseUrl }) {
 
   // --- DOWNLOAD HELPER ---
   const downloadCSV = () => {
-    const headers = ["Name", "Email", "Mobile", "Position", "Status", "Date"];
+    const headers = ["Name", "Email", "Mobile", "Ref ID", "Position", "Status", "Date"];
     const rows = usersList.map(u => [
       u.name, 
       u.email, 
       u.mobile || "N/A", 
+      u.referenceId ? u.referenceId.slice(1) : "N/A",
       u.positionApplied || (u.jobPost?.title || "General"), 
       u.examStatus, 
       new Date(u.createdAt).toLocaleDateString()
@@ -841,14 +842,14 @@ export default function DashboardClient({ initialData, baseUrl }) {
                     />
                   </div>
              </div>
-
-             <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200">
+               <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200">
                <div className="overflow-x-auto">
                  <table className="w-full text-left">
                    <thead className="bg-gray-50 border-b border-gray-200">
                      <tr>
                        <th className="p-4 font-semibold text-gray-600 text-xs uppercase tracking-wider">Date</th>
                        <th className="p-4 font-semibold text-gray-600 text-xs uppercase tracking-wider">Candidate</th>
+                       <th className="p-4 font-semibold text-gray-600 text-xs uppercase tracking-wider">Ref ID</th>
                        <th className="p-4 font-semibold text-gray-600 text-xs uppercase tracking-wider">Role / Job</th>
                        <th className="p-4 font-semibold text-gray-600 text-xs uppercase tracking-wider">Status</th>
                        <th className="p-4 font-semibold text-gray-600 text-xs uppercase tracking-wider text-right">Actions</th>
@@ -861,6 +862,11 @@ export default function DashboardClient({ initialData, baseUrl }) {
                          <td className="p-4">
                             <div className="font-medium text-gray-900">{user.name}</div>
                             <div className="text-xs text-gray-500">{user.email}</div>
+                         </td>
+                         <td className="p-4">
+                           <span className="font-mono text-xs font-bold text-gray-600 bg-gray-100 px-2 py-1 rounded">
+                             {user.referenceId ? user.referenceId.slice(1) : "—"}
+                           </span>
                          </td>
                          <td className="p-4">
                            <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs font-medium border border-blue-100">
@@ -1024,7 +1030,12 @@ export default function DashboardClient({ initialData, baseUrl }) {
                         .map(sub => (
                           <tr key={sub.id} className="hover:bg-purple-50/30 transition-colors group">
                             <td className="px-6 py-4">
-                              <div className="font-semibold text-gray-900">{sub.user?.name || "—"}</div>
+                              <div className="flex items-center gap-2">
+                                <div className="font-semibold text-gray-900">{sub.user?.name || "—"}</div>
+                                {sub.user?.referenceId && (
+                                  <span className="text-[10px] font-mono font-bold bg-purple-100 text-purple-700 px-1.5 rounded uppercase">{sub.user.referenceId.slice(1)}</span>
+                                )}
+                              </div>
                               <div className="text-xs text-gray-500">{sub.user?.email}</div>
                               {sub.user?.mobile && (
                                 <div className="text-xs text-gray-400">{sub.user.mobile}</div>

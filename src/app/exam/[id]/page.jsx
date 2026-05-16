@@ -14,7 +14,7 @@ const DEMO_QUESTIONS = {
     ],
     "demo-2": [
         { id: "w1", text: "Describe a challenging situation you handled in your previous role.", options: [] },
-        { id: "w2", text: "Why do you want to join Aarogya Aadhar?", options: [] },
+        { id: "w2", text: "Why do you want to join Livo Aarogya Aadhar PVT LTD?", options: [] },
     ]
 };
 
@@ -300,7 +300,7 @@ export default function ExamSession({ params }) {
                             <p className="text-xs text-amber-700/70 mb-3">Effective Date: {new Date().toLocaleDateString()}</p>
 
                             <div className={`text-sm text-amber-900 space-y-3 leading-relaxed transition-all ${expandNDA ? '' : 'max-h-40 overflow-hidden relative'}`}>
-                                <p><strong>BETWEEN:</strong> Livo AarogyaAadhar Private Limited ("The Company") AND You ("The Candidate/Employee").</p>
+                                <p><strong>BETWEEN:</strong> Livo Aarogya Aadhar PVT LTD ("The Company") AND You ("The Candidate/Employee").</p>
 
                                 <p><strong>1. Confidential Information:</strong> You agree that all information shared by the Company (financials, strategies, products, code, data, customer lists, IP) is strictly confidential property.</p>
 
@@ -312,8 +312,8 @@ export default function ExamSession({ params }) {
                                         <p>This Non-Disclosure Agreement (hereinafter referred to as the “Agreement”) is made and executed on this <strong>{new Date().toLocaleDateString()}</strong> (hereinafter the “Effective Date”).</p>
 
                                         <p><strong>BETWEEN</strong><br />
-                                            Livo AarogyaAadhar Private Limited, CIN: U86201PN2023PTC219864, a Company registered under the Companies Act 2013, having its registered office at – Aarogya Aadhar Office Address: Kisan Bhavan, Aarogya Aadhar Patient War Room, Opp to Bank of Baroda, Range Hill Road, Yashwant Nagar, Pune - 411053, Maharashtra, India, through its Founder & Managing Director Dr Shubham (DIN:10129766)<br />
-                                            …Hereinafter referred to as the “Livo AarogyaAadhar Private Limited” (Which expression shall unless repugnant to the context thereof shall be deemed to mean and include its heirs, executors, successors, administrators and assignees)</p>
+                                            Livo Aarogya Aadhar PVT LTD, CIN: U86201PN2023PTC219864, a Company registered under the Companies Act 2013, having its registered office at – Livo Aarogya Aadhar Office Address: Kisan Bhavan, Livo Aarogya Aadhar Patient War Room, Opp to Bank of Baroda, Range Hill Road, Yashwant Nagar, Pune - 411053, Maharashtra, India, through its Founder & Managing Director Dr Shubham (DIN:10129766)<br />
+                                            …Hereinafter referred to as the “Livo Aarogya Aadhar PVT LTD” (Which expression shall unless repugnant to the context thereof shall be deemed to mean and include its heirs, executors, successors, administrators and assignees)</p>
 
                                         <p><strong>AND</strong><br />
                                             The Candidate/Employee/Shareholder/Co-Founder (You)<br />
@@ -388,7 +388,7 @@ export default function ExamSession({ params }) {
                                             <div className="grid grid-cols-2 gap-4 text-center">
                                                 <div>
                                                     <p className="font-bold">Dr Shubham Gadge (Founder & MD)</p>
-                                                    <p className="text-[10px]">Livo AarogyaAadhar Private Limited</p>
+                                                    <p className="text-[10px]">Livo Aarogya Aadhar PVT LTD</p>
                                                 </div>
                                                 <div>
                                                     <p className="font-bold">Candidate / Employee</p>
@@ -518,11 +518,7 @@ export default function ExamSession({ params }) {
                     <div className="hidden print:block w-full text-left mb-8 border-b-2 border-black pb-4">
                         <div className="flex justify-between items-center mb-6">
                             <div className="flex items-center gap-4">
-                                <img
-                                    src="https://res.cloudinary.com/dorreici1/image/upload/v1763636388/420a5318-cb6c-4915-a728-979d8973a9d1.png"
-                                    alt="Logo"
-                                    className="h-16 object-contain"
-                                />
+                                <span className="text-xl font-bold">Livo Aarogya Aadhar PVT LTD</span>
                             </div>
                             <div className="text-xl font-bold uppercase tracking-wider text-right">
                                 Assessment Paper
@@ -545,7 +541,7 @@ export default function ExamSession({ params }) {
                             <div className="flex items-baseline col-span-2">
                                 <span className="font-bold mr-2 w-32">Position Applied:</span>
                                 <span className="border-b border-black flex-1 h-6 font-mono pl-2">
-                                    {questions.length > 0 ? "Aarogya Aadhar Applicant" : ""}
+                                    {questions.length > 0 ? "Livo Aarogya Aadhar PVT LTD Applicant" : ""}
                                 </span>
                             </div>
                         </div>

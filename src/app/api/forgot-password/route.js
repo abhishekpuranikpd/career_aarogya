@@ -39,7 +39,7 @@ export async function POST(req) {
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2>Password Reset Request</h2>
-        <p>You requested to reset your password for your Aarogya Aadhar Careers account.</p>
+        <p>You requested to reset your password for your Livo Aarogya Aadhar PVT LTD Careers account.</p>
         <p>Please click the button below to reset your password:</p>
         <div style="text-align: center; margin: 30px 0;">
           <a href="${resetUrl}" style="background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">Reset Password</a>
@@ -53,7 +53,7 @@ export async function POST(req) {
 
     const emailSent = await sendEmail({
       to: email,
-      subject: "Reset Your Password - Aarogya Aadhar Careers",
+      subject: "Reset Your Password - Livo Aarogya Aadhar PVT LTD Careers",
       html: emailHtml,
     });
 

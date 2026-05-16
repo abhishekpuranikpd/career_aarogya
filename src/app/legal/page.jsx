@@ -18,7 +18,7 @@ export default function LegalPage() {
                             Privacy Policy
                         </h2>
                         <div className="prose text-gray-600 space-y-4">
-                            <p>At Aarogya Aadhar, we are committed to protecting your personal information. This Privacy Policy outlines how we collect, use, and safeguard your data.</p>
+                            <p>At Livo Aarogya Aadhar PVT LTD, we are committed to protecting your personal information. This Privacy Policy outlines how we collect, use, and safeguard your data.</p>
                             <h3 className="font-semibold text-gray-800">Data Collection</h3>
                             <p>We collect information you provide directly to us, such as your name, email address, phone number, and resume when you apply for a position. We also collect data regarding your performance in our assessments.</p>
                             <h3 className="font-semibold text-gray-800">Use of Information</h3>
@@ -35,7 +35,7 @@ export default function LegalPage() {
                             Terms and Conditions
                         </h2>
                         <div className="prose text-gray-600 space-y-4">
-                            <p>By accessing and using the Aarogya Aadhar Career Portal, you agree to comply with these terms.</p>
+                            <p>By accessing and using the Livo Aarogya Aadhar PVT LTD Career Portal, you agree to comply with these terms.</p>
                             <ul className="list-disc pl-5 space-y-2">
                                 <li>You must provide accurate and complete information during registration.</li>
                                 <li>You are responsible for maintaining the confidentiality of your account credentials.</li>
@@ -56,14 +56,14 @@ export default function LegalPage() {
                         </h2>
                         <div className="prose text-gray-700 space-y-4">
                             <p className="font-medium">Confidentiality of Assessment Materials</p>
-                            <p>As an applicant ("Recipient") of Aarogya Aadhar ("Discloser"), you acknowledge that during the recruitment process, you may be exposed to confidential information, including but not limited to:</p>
+                            <p>As an applicant ("Recipient") of Livo Aarogya Aadhar PVT LTD ("Discloser"), you acknowledge that during the recruitment process, you may be exposed to confidential information, including but not limited to:</p>
                             <ul className="list-disc pl-5 space-y-2 text-sm">
                                 <li>Assessment questions, scenarios, and case studies.</li>
                                 <li>Technical challenges and proprietary coding problems.</li>
                                 <li>Internal business logic or operational details revealed during interviews.</li>
                             </ul>
                             <p className="font-bold mt-4">Agreement:</p>
-                            <p>You agree NOT to copy, reproduce, photograph, share, distribute, or discuss any part of the assessment content on any platform (including social media, GitHub, blogs, or forums). Violation of this agreement may result in legal action and permanent blacklisting from future opportunities at Aarogya Aadhar.</p>
+                            <p>You agree NOT to copy, reproduce, photograph, share, distribute, or discuss any part of the assessment content on any platform (including social media, GitHub, blogs, or forums). Violation of this agreement may result in legal action and permanent blacklisting from future opportunities at Livo Aarogya Aadhar PVT LTD.</p>
                         </div>
                     </section>
                 </div>

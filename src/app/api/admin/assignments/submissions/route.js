@@ -17,6 +17,7 @@ export async function GET() {
           name: true,
           email: true,
           mobile: true,
+          referenceId: true,
           positionApplied: true,
           jobPost: { select: { title: true } },
         },

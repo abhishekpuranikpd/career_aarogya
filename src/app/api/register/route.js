@@ -61,9 +61,9 @@ export async function POST(req) {
       await transporter.sendMail({
         ...mailOptions,
         to: email,
-        subject: `Registration Successful - Aarogya Aadhar`,
-        text: `Dear ${name},\n\nThank you for registering for the ${position} position at Aarogya Aadhar. Your Reference ID is ${referenceId}.\n\nPlease proceed to the dashboard: ${process.env.NEXT_PUBLIC_BASE_URL || 'https://career.aarogyaaadhar.com'}/dashboard\n\nRegards,\nAarogya Aadhar Team`,
-        html: `<h1>Registration Successful</h1><p>Dear ${name},</p><p>Thank you for registering for the <strong>${position}</strong> position at Aarogya Aadhar.</p><p>Your Reference ID is: <strong>${referenceId}</strong></p><p><a href="${process.env.NEXT_PUBLIC_BASE_URL || 'https://career.aarogyaaadhar.com'}/dashboard" style="background-color:#1e40af;color:white;padding:10px 20px;text-decoration:none;border-radius:5px;">Go to Dashboard</a></p><br/><p>Regards,<br/>Aarogya Aadhar Team</p>`,
+        subject: `Registration Successful - Livo Aarogya Aadhar PVT LTD`,
+        text: `Dear ${name},\n\nThank you for registering for the ${position} position at Livo Aarogya Aadhar PVT LTD. Your Reference ID is ${referenceId}.\n\nPlease proceed to the dashboard: ${process.env.NEXT_PUBLIC_BASE_URL || 'https://career.aarogyaaadhar.com'}/dashboard\n\nRegards,\nLivo Aarogya Aadhar Team`,
+        html: `<h1>Registration Successful</h1><p>Dear ${name},</p><p>Thank you for registering for the <strong>${position}</strong> position at Livo Aarogya Aadhar PVT LTD.</p><p>Your Reference ID is: <strong>${referenceId}</strong></p><p><a href="${process.env.NEXT_PUBLIC_BASE_URL || 'https://career.aarogyaaadhar.com'}/dashboard" style="background-color:#1e40af;color:white;padding:10px 20px;text-decoration:none;border-radius:5px;">Go to Dashboard</a></p><br/><p>Regards,<br/>Livo Aarogya Aadhar Team</p>`,
       });
     } catch (emailErr) {
       console.error('Email error (non-fatal):', emailErr);

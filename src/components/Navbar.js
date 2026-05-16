@@ -14,16 +14,7 @@ export default function Navbar() {
     <nav className="sticky top-0 z-50 bg-white shadow-md border-b border-gray-100">
       <div className="container mx-auto px-4 h-20 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-48 h-14 relative">
-             <Image 
-                src="https://res.cloudinary.com/dorreici1/image/upload/v1763636388/420a5318-cb6c-4915-a728-979d8973a9d1.png" 
-                alt="Aarogya Aadhar Logo" 
-                fill
-                className="object-contain object-left"
-                priority
-             />
-          </div>
-{/* Logo Only */}
+          <span className="text-xl font-bold text-primary tracking-tight">Livo Aarogya Aadhar PVT LTD</span>
         </Link>
 
         {/* Desktop Menu */}

@@ -23,7 +23,7 @@ export default async function CareersPage() {
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-6">Join Our Mission</h1>
           <p className="text-xl opacity-90 max-w-2xl mx-auto">
-            Discover opportunities to shape the future of digital healthcare in India with Aarogya Aadhar.
+            Discover opportunities to shape the future of digital healthcare in India with Livo Aarogya Aadhar PVT LTD.
           </p>
         </div>
       </section>

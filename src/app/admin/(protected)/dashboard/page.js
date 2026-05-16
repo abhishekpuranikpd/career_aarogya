@@ -24,6 +24,7 @@ export default async function AdminDashboard() {
         id: true,
         email: true,
         name: true,
+        referenceId: true,
         examStatus: true,
         positionApplied: true,
         createdAt: true,

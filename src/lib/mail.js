@@ -22,7 +22,7 @@ export const sendEmail = async ({ to, subject, html, attachments }) => {
 
   try {
     const info = await transporter.sendMail({
-      from: `"Aarogya Aadhar Careers" <${user}>`,
+      from: `"Livo Aarogya Aadhar PVT LTD Careers" <${user}>`,
       to,
       subject,
       html,

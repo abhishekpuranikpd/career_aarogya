@@ -56,7 +56,15 @@ export default async function UserDashboard() {
       <div className="bg-primary text-white py-12">
         <div className="container mx-auto px-4">
            <h1 className="text-3xl font-bold">Welcome, {user.name}</h1>
-           <p className="opacity-90 mt-1">Application Dashboard</p>
+           <div className="flex items-center gap-3 mt-1">
+             <p className="opacity-90">Application Dashboard</p>
+             {user.referenceId && (
+               <>
+                 <span className="opacity-40">•</span>
+                 <p className="bg-white/20 px-2 py-0.5 rounded text-xs font-mono font-bold tracking-wider">REF ID: {user.referenceId?.slice(1)}</p>
+               </>
+             )}
+           </div>
         </div>
       </div>
 
@@ -68,9 +76,12 @@ export default async function UserDashboard() {
            <div className="mb-8 flex flex-col md:flex-row justify-between items-center gap-6 p-6 bg-blue-50 rounded-xl border border-blue-100">
              <div className="flex-1">
                <span className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-2">Active Application</span>
-               {user.positionApplied || user.jobPost ? (
-                 <>
-                    <h2 className="text-2xl font-bold text-blue-900">{user.positionApplied || user.jobPost?.title}</h2>
+                {user.positionApplied || user.jobPost ? (
+                  <>
+                     <div className="flex flex-col md:flex-row md:items-center gap-2 mb-1">
+                        <h2 className="text-2xl font-bold text-blue-900">{user.positionApplied || user.jobPost?.title}</h2>
+                        {user.referenceId && <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-[10px] font-bold w-fit uppercase tracking-tighter">ID: {user.referenceId.slice(1)}</span>}
+                     </div>
                     <p className="text-gray-600 mt-1 flex items-center gap-2">
                         {user.jobPost?.location && <span className="bg-white px-2 py-1 rounded text-xs border border-gray-200">{user.jobPost.location}</span>}
                         <span className={`px-2 py-1 rounded text-xs font-bold ${
@@ -152,6 +163,12 @@ export default async function UserDashboard() {
                              <>
                                <p className="text-sm text-gray-500">{new Date(latestResponse.submittedAt).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}</p>
                                <p className="text-sm mt-1 text-gray-600">Assessment submitted successfully.</p>
+                               {latestResponse.score !== null && (
+                                   <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-100 inline-block">
+                                       <span className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-1">Assessment Score</span>
+                                       <span className="text-xl font-black text-blue-900">{latestResponse.score} <span className="text-sm text-gray-500 font-medium">/ 10</span></span>
+                                   </div>
+                               )}
                              </>
                            ) : (
                              <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 mt-2">

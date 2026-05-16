@@ -10,6 +10,7 @@ export async function POST(req) {
       select: {
         name: true,
         positionApplied: true,
+        referenceId: true,
         examStatus: true,
         createdAt: true
       }

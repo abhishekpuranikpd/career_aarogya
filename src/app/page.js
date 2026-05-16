@@ -17,7 +17,7 @@ export default function Home() {
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">Healthcare in India</span>
           </h1>
           <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto mb-10 leading-relaxed font-medium">
-            Join Aarogya Aadhar and become part of a revolutionary mission to digitize and improve healthcare accessibility for a billion lives.
+            Join Livo Aarogya Aadhar PVT LTD and become part of a revolutionary mission to digitize and improve healthcare accessibility for a billion lives.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/careers" className="px-8 py-4 bg-primary text-white rounded-full font-bold text-lg hover:bg-blue-700 transition shadow-lg hover:shadow-xl hover:-translate-y-1">

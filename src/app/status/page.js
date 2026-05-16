@@ -74,6 +74,12 @@ export default function StatusPage() {
                 <span>Position:</span>
                 <span className="font-medium text-gray-900">{result.positionApplied}</span>
               </div>
+              {result.referenceId && (
+                <div className="flex justify-between">
+                  <span>Ref ID:</span>
+                  <span className="font-mono font-bold text-primary">{result.referenceId.slice(1)}</span>
+                </div>
+              )}
               <div className="flex justify-between">
                 <span>Applied On:</span>
                 <span className="font-medium text-gray-900">{new Date(result.createdAt).toLocaleDateString()}</span>
