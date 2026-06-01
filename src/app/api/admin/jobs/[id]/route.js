@@ -34,7 +34,7 @@ export async function PUT(req, { params }) {
     const body = await req.json();
     const { 
       title, description, imageUrl, responsibilitiesPdf, applicationProcess, location, type, salary, examId, isActive,
-      whatsappGroupLink, referenceIdPrefix, examStartDate, resultDate, inductionDate, joiningDate
+      whatsappGroupLink, referenceIdPrefix, applicationStartDate, examStartDate, resultDate, inductionDate, joiningDate
     } = body;
 
     const job = await prisma.jobPost.update({

@@ -91,6 +91,7 @@ model JobPost {
   whatsappGroupLink  String?   // WhatsApp group invite link
 
   // Important dates for applicants
+  applicationStartDate DateTime?
   examStartDate DateTime?
   resultDate    DateTime?
   inductionDate DateTime?
