@@ -34,7 +34,7 @@ export default async function AdminDashboard() {
       }
     }),
 
-    // ✅ JOBS (no heavy relations)
+    // ✅ JOBS (no heavy relations, fixed $lookup count)
     prisma.jobPost.findMany({
       orderBy: { createdAt: 'desc' },
       select: {
@@ -42,9 +42,6 @@ export default async function AdminDashboard() {
         title: true,
         isActive: true,
         createdAt: true,
-        _count: {
-          select: { applicants: true }
-        },
         exam: {
           select: {
             id: true,
@@ -52,9 +49,22 @@ export default async function AdminDashboard() {
           }
         }
       }
+    }).then(async (fetchedJobs) => {
+      const counts = await prisma.user.groupBy({
+        by: ['jobPostId'],
+        where: { jobPostId: { in: fetchedJobs.map(j => j.id) } },
+        _count: { jobPostId: true }
+      });
+      return fetchedJobs.map(job => {
+        const countObj = counts.find(c => c.jobPostId === job.id);
+        return {
+          ...job,
+          _count: { applicants: countObj ? countObj._count.jobPostId : 0 }
+        };
+      });
     }),
 
-    // ✅ EXAMS (NO responses include ❌)
+    // ✅ EXAMS (NO responses include ❌, and no relation counts to avoid MongoDB $lookup 16MB limit)
     prisma.exam.findMany({
       take: 10,
       orderBy: { id: 'desc' },
@@ -65,10 +75,21 @@ export default async function AdminDashboard() {
         windowStart: true,
         windowEnd: true,
         questions: true, // embedded type, safe
-        _count: {
-          select: { responses: true } // ✅ count instead of full data
-        }
       }
+    }).then(async (fetchedExams) => {
+      // Fetch counts manually to avoid $lookup size limits
+      const counts = await prisma.response.groupBy({
+        by: ['examId'],
+        where: { examId: { in: fetchedExams.map(e => e.id) } },
+        _count: { examId: true }
+      });
+      return fetchedExams.map(exam => {
+        const countObj = counts.find(c => c.examId === exam.id);
+        return {
+          ...exam,
+          _count: { responses: countObj ? countObj._count.examId : 0 }
+        };
+      });
     }),
 
     // ✅ RECENT RESPONSES ONLY
