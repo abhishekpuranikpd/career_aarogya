@@ -156,3 +156,12 @@ model AssignmentSubmission {
 
   @@unique([userId, assignmentId])
 }
+
+model TestDataset {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  firstName  String
+  middleName String?
+  lastName   String
+  gender     String
+  createdAt  DateTime @default(now())
+}
