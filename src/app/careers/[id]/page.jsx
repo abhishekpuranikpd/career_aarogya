@@ -36,18 +36,20 @@ export default async function JobDetailsPage({ params }) {
     return (
         <div className="min-h-screen bg-white pb-20">
             {/* Hero / Cover */}
-            <div className="relative h-[300px] md:h-[400px] bg-gray-900">
+            <div className="relative h-[450px] md:h-[500px] bg-gray-900 group cursor-pointer">
                 {job.imageUrl ? (
-                    <Image src={job.imageUrl} alt={job.title} fill className="object-cover opacity-60" priority />
+                    <a href={job.imageUrl} target="_blank" rel="noopener noreferrer" className="absolute inset-0 z-0">
+                        <Image src={job.imageUrl} alt={job.title} fill className="object-cover opacity-60" priority />
+                    </a>
                 ) : (
-                    <div className="w-full h-full bg-gradient-to-r from-blue-900 to-blue-600 opacity-90"></div>
+                    <div className="w-full h-full bg-gradient-to-r from-blue-900 to-blue-600 opacity-90 absolute inset-0 z-0"></div>
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent pointer-events-none z-0"></div>
 
-                <div className="absolute bottom-0 left-0 w-full p-8 md:p-12 text-white">
+                <div className="absolute bottom-0 left-0 w-full p-8 md:p-12 text-white z-10 pointer-events-none">
                     <div className="container mx-auto">
                         <div className="flex flex-col md:flex-row justify-between items-end gap-6">
-                            <div>
+                            <div className="pointer-events-auto">
                                 <span className="bg-blue-600 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-4 inline-block">
                                     {job.type || 'Opening'}
                                 </span>
@@ -59,7 +61,7 @@ export default async function JobDetailsPage({ params }) {
                                 </div>
                             </div>
 
-                            <div className="flex gap-4 items-center">
+                            <div className="flex gap-4 items-center pointer-events-auto">
                                 <div className="w-[180px]">
                                     <ApplyButton jobId={job.id} jobTitle={job.title} />
                                 </div>
