@@ -152,7 +152,7 @@ export default async function UserDashboard() {
                      </div>
         
                      {/* Step 2: Exam */}
-                     {user.jobPost?.examId ? (
+                     {(user.jobPost?.examId || user.jobPost?.externalExamUrl) ? (
                          <div className="relative group">
                            <span className={`absolute -left-[43px] w-7 h-7 rounded-full flex items-center justify-center text-sm shadow-sm ring-4 ring-white transition-colors ${latestResponse ? 'bg-green-500 text-white' : 'bg-blue-600 text-white animate-pulse'}`}>
                              {latestResponse ? '✓' : '2'}
@@ -222,12 +222,23 @@ export default async function UserDashboard() {
                                             </div>
                                         </div>
 
-                                        <Link 
-                                            href={`/exam/${user.jobPost.examId}`} 
-                                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition shadow-sm hover:shadow"
-                                        >
-                                          Take Assessment Now
-                                        </Link>
+                                        {user.jobPost.externalExamUrl ? (
+                                            <a
+                                                href={user.jobPost.externalExamUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition shadow-sm hover:shadow"
+                                            >
+                                                Take Assessment Now (External Link)
+                                            </a>
+                                        ) : (
+                                            <Link 
+                                                href={`/exam/${user.jobPost.examId}`} 
+                                                className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition shadow-sm hover:shadow"
+                                            >
+                                              Take Assessment Now
+                                            </Link>
+                                        )}
                                     </>
                                 )}
                              </div>

@@ -39,6 +39,7 @@ export default function EditJobPost({ params }) {
         inductionDate: "",
         joiningDate: "",
         applicationProcess: "",
+        externalExamUrl: "",
     });
     const [exams, setExams] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -74,6 +75,7 @@ export default function EditJobPost({ params }) {
                     inductionDate: toDatetimeLocal(data.inductionDate),
                     joiningDate: toDatetimeLocal(data.joiningDate),
                     applicationProcess: data.applicationProcess || "",
+                    externalExamUrl: data.externalExamUrl || "",
                 });
                 setLoading(false);
             })
@@ -317,7 +319,8 @@ export default function EditJobPost({ params }) {
 
                         {/* Linked Exam */}
                         <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
-                            <h3 className="font-semibold text-blue-900 mb-2">Assessment Link</h3>
+                            <h3 className="font-semibold text-blue-900 mb-2">Assessment Link (Internal)</h3>
+                            <p className="text-sm text-blue-700 mb-4">Select the internal exam that applicants must take for this position.</p>
                             <select
                                 className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-primary/20 outline-none bg-white"
                                 value={formData.examId}
@@ -328,6 +331,17 @@ export default function EditJobPost({ params }) {
                                     <option key={exam.id} value={exam.id}>{exam.title} ({exam.type})</option>
                                 ))}
                             </select>
+                            <div className="mt-4 border-t border-blue-200 pt-4">
+                                <label className="block text-sm font-medium mb-1 text-blue-900">OR External Assessment URL</label>
+                                <p className="text-xs text-blue-700 mb-2">If provided, applicants will be redirected to this link instead of the internal exam.</p>
+                                <input 
+                                    type="url" 
+                                    className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-blue-300 outline-none"
+                                    placeholder="https://external-exam-portal.com/..."
+                                    value={formData.externalExamUrl}
+                                    onChange={e => setFormData({...formData, externalExamUrl: e.target.value})}
+                                />
+                            </div>
                         </div>
 
                         <button

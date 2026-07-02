@@ -21,6 +21,7 @@ export default function CreateJobPost() {
     // New fields
     referenceIdPrefix: "",
     whatsappGroupLink: "",
+    externalExamUrl: "",
     examStartDate: "",
     applicationStartDate: "",
     resultDate: "",
@@ -264,11 +265,10 @@ export default function CreateJobPost() {
 
             {/* Linked Exam */}
             <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
-               <h3 className="font-semibold text-blue-900 mb-2">Assessment Link</h3>
-               <p className="text-sm text-blue-700 mb-4">Select the exam that applicants must take for this position.</p>
+               <h3 className="font-semibold text-blue-900 mb-2">Assessment Link (Internal)</h3>
+               <p className="text-sm text-blue-700 mb-4">Select the internal exam that applicants must take for this position.</p>
                
                <select 
-                  required
                   className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-primary/20 outline-none bg-white"
                   value={formData.examId}
                   onChange={e => setFormData({...formData, examId: e.target.value})}
@@ -280,6 +280,16 @@ export default function CreateJobPost() {
                </select>
                <div className="mt-2 text-right">
                   <Link href="/admin/exams/create" className="text-sm text-primary hover:underline font-medium">+ Create New Exam</Link>
+               <div className="mt-4 border-t border-blue-200 pt-4">
+                 <label className="block text-sm font-medium mb-1 text-blue-900">OR External Assessment URL</label>
+                 <p className="text-xs text-blue-700 mb-2">If provided, applicants will be redirected to this link instead of the internal exam.</p>
+                 <input 
+                   type="url" 
+                   className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-blue-300 outline-none"
+                   placeholder="https://external-exam-portal.com/..."
+                   value={formData.externalExamUrl}
+                   onChange={e => setFormData({...formData, externalExamUrl: e.target.value})}
+                 />
                </div>
             </div>
 

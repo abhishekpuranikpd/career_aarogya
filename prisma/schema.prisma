@@ -99,6 +99,7 @@ model JobPost {
 
   examId String? @db.ObjectId
   exam   Exam?   @relation(fields: [examId], references: [id])
+  externalExamUrl String?
 
   applicants User[]
 
