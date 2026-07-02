@@ -280,6 +280,7 @@ export default function CreateJobPost() {
                </select>
                <div className="mt-2 text-right">
                   <Link href="/admin/exams/create" className="text-sm text-primary hover:underline font-medium">+ Create New Exam</Link>
+               </div>
                <div className="mt-4 border-t border-blue-200 pt-4">
                  <label className="block text-sm font-medium mb-1 text-blue-900">OR External Assessment URL</label>
                  <p className="text-xs text-blue-700 mb-2">If provided, applicants will be redirected to this link instead of the internal exam.</p>
