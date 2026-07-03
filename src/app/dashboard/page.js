@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 import { CheckBadgeIcon, ClockIcon, XCircleIcon } from "@heroicons/react/24/outline"
 import AssignmentCard from "./AssignmentCard"
+import { MongoClient, ObjectId } from "mongodb";
 
 export const dynamic = 'force-dynamic';
 
@@ -39,8 +40,11 @@ export default async function UserDashboard() {
       })
     : null;
 
-  const latestResponse = user.responses[0];
-  const pendingExam = user.jobPost?.examId && (!latestResponse || latestResponse.examId !== user.jobPost.examId);
+  let latestResponse = user.responses[0];
+  if (latestResponse && user.jobPost?.examId !== latestResponse.examId) {
+     latestResponse = null; // Only show response if it belongs to the current job's internal exam
+  }
+  const pendingExam = user.jobPost?.examId && !latestResponse;
 
   // Exam Time Window Logic
   const now = new Date();
@@ -50,6 +54,23 @@ export default async function UserDashboard() {
   
   const notStarted = start && now < start;
   const expired = end && now > end;
+
+  // External Exam PIN fetching
+  let externalPin = null;
+  if (user.jobPost?.externalExamId && process.env.AGENT_DB_URL) {
+    try {
+      const client = new MongoClient(process.env.AGENT_DB_URL);
+      await client.connect();
+      const candidate = await client.db().collection("ExamCandidate").findOne({
+        examId: new ObjectId(user.jobPost.externalExamId),
+        email: user.email
+      });
+      if (candidate) externalPin = candidate.pin;
+      await client.close();
+    } catch(e) {
+      console.error("Failed to fetch external PIN:", e);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
@@ -223,14 +244,43 @@ export default async function UserDashboard() {
                                         </div>
 
                                         {user.jobPost.externalExamUrl ? (
-                                            <a
-                                                href={user.jobPost.externalExamUrl}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition shadow-sm hover:shadow"
-                                            >
-                                                Take Assessment Now (External Link)
-                                            </a>
+                                            <div className="space-y-4">
+                                                {externalPin && (
+                                                    <div className="bg-yellow-50 p-5 rounded-xl border border-yellow-300 shadow-sm relative overflow-hidden">
+                                                        <div className="absolute top-0 left-0 w-1 h-full bg-yellow-500"></div>
+                                                        <h4 className="font-extrabold text-yellow-900 mb-2 text-lg flex items-center gap-2">
+                                                            <svg className="w-5 h-5 text-yellow-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                                            </svg>
+                                                            Your Exam Credentials
+                                                        </h4>
+                                                        <p className="text-sm text-yellow-800 mb-3 font-medium">Use these exact details to log in to the Agent Exam Portal:</p>
+                                                        <div className="font-mono text-sm bg-white p-4 rounded-lg border border-yellow-200 shadow-inner space-y-2">
+                                                            <div className="flex justify-between items-center"><span className="text-gray-500 font-bold uppercase tracking-wider text-xs">Email</span> <strong className="text-gray-900">{user.email}</strong></div>
+                                                            <div className="flex justify-between items-center"><span className="text-gray-500 font-bold uppercase tracking-wider text-xs">Login PIN</span> <strong className="text-2xl text-blue-700 tracking-widest">{externalPin}</strong></div>
+                                                        </div>
+                                                        
+                                                        <div className="mt-4 pt-4 border-t border-yellow-200 space-y-2">
+                                                          <h5 className="font-bold text-yellow-900 text-sm">⚠️ Important Exam Instructions:</h5>
+                                                          <ul className="text-xs text-yellow-800 space-y-1 list-disc pl-4 font-medium">
+                                                            <li>The exam requires your <strong>camera</strong> to be ON at all times.</li>
+                                                            <li>Do not switch tabs, minimize the browser, or open any other applications.</li>
+                                                            <li><strong className="text-red-600">If you copy or paste even ONE TIME, the system will immediately terminate the exam.</strong></li>
+                                                            <li>Any suspicious activity will be auto-flagged and may result in immediate disqualification.</li>
+                                                            <li>Ensure you are in a quiet, well-lit room with a stable internet connection.</li>
+                                                          </ul>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                <a
+                                                    href={user.jobPost.externalExamUrl}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition shadow-sm hover:shadow"
+                                                >
+                                                    Take Assessment Now (External Link)
+                                                </a>
+                                            </div>
                                         ) : (
                                             <Link 
                                                 href={`/exam/${user.jobPost.examId}`} 

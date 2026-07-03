@@ -35,7 +35,7 @@ export async function PUT(req, { params }) {
     const { 
       title, description, imageUrl, responsibilitiesPdf, applicationProcess, location, type, salary, examId, isActive,
       whatsappGroupLink, referenceIdPrefix, applicationStartDate, examStartDate, resultDate, inductionDate, joiningDate,
-      externalExamUrl
+      externalExamUrl, externalExamId, externalBatchId
     } = body;
 
     const job = await prisma.jobPost.update({
@@ -53,6 +53,8 @@ export async function PUT(req, { params }) {
         exam: examId ? { connect: { id: examId } } : { disconnect: true },
         whatsappGroupLink: whatsappGroupLink || null,
         externalExamUrl: externalExamUrl || null,
+        externalExamId: externalExamId || null,
+        externalBatchId: externalBatchId || null,
         referenceIdPrefix: referenceIdPrefix ? referenceIdPrefix.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 4) : null,
         applicationStartDate: applicationStartDate ? new Date(applicationStartDate) : null,
         examStartDate: examStartDate ? new Date(examStartDate) : null,

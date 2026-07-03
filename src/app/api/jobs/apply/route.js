@@ -48,6 +48,52 @@ export async function POST(req) {
       }
     });
 
+    // Auto-sync to external DB if applicable
+    const jobPost = await prisma.jobPost.findUnique({ where: { id: jobPostId } });
+    if (jobPost && jobPost.externalExamId && jobPost.externalBatchId && process.env.AGENT_DB_URL) {
+      try {
+        const { MongoClient, ObjectId } = require('mongodb');
+        const client = new MongoClient(process.env.AGENT_DB_URL);
+        await client.connect();
+        const candidateCollection = client.db().collection("ExamCandidate");
+        
+        const existing = await candidateCollection.findOne({
+          examId: new ObjectId(jobPost.externalExamId),
+          email: session.user.email
+        });
+        
+        const generatePin = () => Math.floor(1000 + Math.random() * 9000).toString();
+
+        if (existing) {
+          await candidateCollection.updateOne(
+            { _id: existing._id },
+            { 
+              $set: { 
+                batchId: new ObjectId(jobPost.externalBatchId),
+                pin: generatePin(),
+                updatedAt: new Date()
+              } 
+            }
+          );
+        } else {
+          await candidateCollection.insertOne({
+            examId: new ObjectId(jobPost.externalExamId),
+            batchId: new ObjectId(jobPost.externalBatchId),
+            email: session.user.email,
+            pin: generatePin(),
+            status: "PENDING",
+            hiringStatus: "PENDING",
+            warningsCount: 0,
+            createdAt: new Date(),
+            updatedAt: new Date()
+          });
+        }
+        await client.close();
+      } catch (err) {
+        console.error("Failed to auto-sync applicant to external DB", err);
+      }
+    }
+
     return NextResponse.json({ success: true, user: updatedUser });
 
   } catch (error) {

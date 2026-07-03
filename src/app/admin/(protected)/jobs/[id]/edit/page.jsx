@@ -40,16 +40,27 @@ export default function EditJobPost({ params }) {
         joiningDate: "",
         applicationProcess: "",
         externalExamUrl: "",
+        externalExamId: "",
+        externalBatchId: "",
     });
     const [exams, setExams] = useState([]);
+    const [externalExams, setExternalExams] = useState([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [syncing, setSyncing] = useState(false);
 
     useEffect(() => {
         fetch("/api/exam")
             .then(res => res.json())
             .then(data => setExams(data))
             .catch(err => console.error("Failed to fetch exams", err));
+            
+        fetch("/api/admin/external-data")
+            .then(res => res.json())
+            .then(data => {
+                if(data.exams) setExternalExams(data.exams);
+            })
+            .catch(err => console.error("Failed to fetch external exams", err));
 
         fetch(`/api/admin/jobs/${jobId}`)
             .then(res => {
@@ -76,6 +87,8 @@ export default function EditJobPost({ params }) {
                     joiningDate: toDatetimeLocal(data.joiningDate),
                     applicationProcess: data.applicationProcess || "",
                     externalExamUrl: data.externalExamUrl || "",
+                    externalExamId: data.externalExamId || "",
+                    externalBatchId: data.externalBatchId || "",
                 });
                 setLoading(false);
             })
@@ -108,6 +121,34 @@ export default function EditJobPost({ params }) {
             alert("Error: " + err.message);
         } finally {
             setSaving(false);
+        }
+    };
+
+    const handleSyncApplicants = async () => {
+        if (!formData.externalExamId || !formData.externalBatchId) {
+            alert("Please select an external exam and batch first.");
+            return;
+        }
+        setSyncing(true);
+        try {
+            const res = await fetch(`/api/admin/jobs/${jobId}/assign-external`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    externalExamId: formData.externalExamId,
+                    externalBatchId: formData.externalBatchId
+                })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                alert(data.message || "Successfully synced applicants!");
+            } else {
+                alert("Failed to sync: " + (data.error || "Unknown error"));
+            }
+        } catch (err) {
+            alert("Error: " + err.message);
+        } finally {
+            setSyncing(false);
         }
     };
 
@@ -332,15 +373,62 @@ export default function EditJobPost({ params }) {
                                 ))}
                             </select>
                             <div className="mt-4 border-t border-blue-200 pt-4">
-                                <label className="block text-sm font-medium mb-1 text-blue-900">OR External Assessment URL</label>
-                                <p className="text-xs text-blue-700 mb-2">If provided, applicants will be redirected to this link instead of the internal exam.</p>
-                                <input 
-                                    type="url" 
-                                    className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-blue-300 outline-none"
-                                    placeholder="https://external-exam-portal.com/..."
-                                    value={formData.externalExamUrl}
-                                    onChange={e => setFormData({...formData, externalExamUrl: e.target.value})}
-                                />
+                                <label className="block text-sm font-medium mb-1 text-blue-900">OR External Assessment Configuration (Agent Portal)</label>
+                                <p className="text-xs text-blue-700 mb-2">Configure an external exam on Team Aarogya Aadhar portal.</p>
+                                
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-xs font-medium mb-1 text-gray-700">External Exam Portal Link (Optional)</label>
+                                        <input 
+                                            type="url" 
+                                            className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-blue-300 outline-none"
+                                            placeholder="https://work.aarogyaaadhar.com/exam/..."
+                                            value={formData.externalExamUrl}
+                                            onChange={e => setFormData({...formData, externalExamUrl: e.target.value})}
+                                        />
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="block text-xs font-medium mb-1 text-gray-700">Select External Exam</label>
+                                        <select
+                                            className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-blue-300 outline-none bg-white"
+                                            value={formData.externalExamId}
+                                            onChange={e => setFormData({...formData, externalExamId: e.target.value, externalBatchId: ""})}
+                                        >
+                                            <option value="">-- Select Exam from Agent Portal --</option>
+                                            {externalExams.map(ex => (
+                                                <option key={ex.id} value={ex.id}>{ex.title}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    
+                                    {formData.externalExamId && (
+                                        <div>
+                                            <label className="block text-xs font-medium mb-1 text-gray-700">Select Batch</label>
+                                            <select
+                                                className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-blue-300 outline-none bg-white"
+                                                value={formData.externalBatchId}
+                                                onChange={e => setFormData({...formData, externalBatchId: e.target.value})}
+                                            >
+                                                <option value="">-- Select Batch --</option>
+                                                {externalExams.find(ex => ex.id === formData.externalExamId)?.batches.map(b => (
+                                                    <option key={b.id} value={b.id}>{b.title}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    )}
+                                    
+                                    {formData.externalExamId && formData.externalBatchId && (
+                                        <button
+                                            type="button"
+                                            onClick={handleSyncApplicants}
+                                            disabled={syncing}
+                                            className="mt-2 w-full py-2 bg-blue-100 text-blue-700 rounded-lg font-semibold hover:bg-blue-200 transition"
+                                        >
+                                            {syncing ? "Syncing..." : "Sync Current Applicants to External Batch"}
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         </div>
 

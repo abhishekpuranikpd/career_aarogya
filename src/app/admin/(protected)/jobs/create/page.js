@@ -22,6 +22,8 @@ export default function CreateJobPost() {
     referenceIdPrefix: "",
     whatsappGroupLink: "",
     externalExamUrl: "",
+    externalExamId: "",
+    externalBatchId: "",
     examStartDate: "",
     applicationStartDate: "",
     resultDate: "",
@@ -30,6 +32,7 @@ export default function CreateJobPost() {
     applicationProcess: "",
   });
   const [exams, setExams] = useState([]);
+  const [externalExams, setExternalExams] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -37,6 +40,13 @@ export default function CreateJobPost() {
       .then(res => res.json())
       .then(data => setExams(data))
       .catch(err => console.error("Failed to fetch exams", err));
+      
+    fetch("/api/admin/external-data")
+      .then(res => res.json())
+      .then(data => {
+        if(data.exams) setExternalExams(data.exams);
+      })
+      .catch(err => console.error("Failed to fetch external exams", err));
   }, []);
 
   const handleSubmit = async (e) => {
@@ -282,15 +292,51 @@ export default function CreateJobPost() {
                   <Link href="/admin/exams/create" className="text-sm text-primary hover:underline font-medium">+ Create New Exam</Link>
                </div>
                <div className="mt-4 border-t border-blue-200 pt-4">
-                 <label className="block text-sm font-medium mb-1 text-blue-900">OR External Assessment URL</label>
-                 <p className="text-xs text-blue-700 mb-2">If provided, applicants will be redirected to this link instead of the internal exam.</p>
-                 <input 
-                   type="url" 
-                   className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-blue-300 outline-none"
-                   placeholder="https://external-exam-portal.com/..."
-                   value={formData.externalExamUrl}
-                   onChange={e => setFormData({...formData, externalExamUrl: e.target.value})}
-                 />
+                 <label className="block text-sm font-medium mb-1 text-blue-900">OR External Assessment Configuration (Agent Portal)</label>
+                 <p className="text-xs text-blue-700 mb-2">Configure an external exam on Team Aarogya Aadhar portal.</p>
+                 
+                 <div className="space-y-4">
+                   <div>
+                     <label className="block text-xs font-medium mb-1 text-gray-700">External Exam Portal Link (Optional)</label>
+                     <input 
+                       type="url" 
+                       className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-blue-300 outline-none"
+                       placeholder="https://work.aarogyaaadhar.com/exam/..."
+                       value={formData.externalExamUrl}
+                       onChange={e => setFormData({...formData, externalExamUrl: e.target.value})}
+                     />
+                   </div>
+                   
+                   <div>
+                     <label className="block text-xs font-medium mb-1 text-gray-700">Select External Exam</label>
+                     <select
+                       className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-blue-300 outline-none bg-white"
+                       value={formData.externalExamId}
+                       onChange={e => setFormData({...formData, externalExamId: e.target.value, externalBatchId: ""})}
+                     >
+                       <option value="">-- Select Exam from Agent Portal --</option>
+                       {externalExams.map(ex => (
+                         <option key={ex.id} value={ex.id}>{ex.title}</option>
+                       ))}
+                     </select>
+                   </div>
+                   
+                   {formData.externalExamId && (
+                     <div>
+                       <label className="block text-xs font-medium mb-1 text-gray-700">Select Batch</label>
+                       <select
+                         className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-blue-300 outline-none bg-white"
+                         value={formData.externalBatchId}
+                         onChange={e => setFormData({...formData, externalBatchId: e.target.value})}
+                       >
+                         <option value="">-- Select Batch --</option>
+                         {externalExams.find(ex => ex.id === formData.externalExamId)?.batches.map(b => (
+                           <option key={b.id} value={b.id}>{b.title}</option>
+                         ))}
+                       </select>
+                     </div>
+                   )}
+                 </div>
                </div>
             </div>
 

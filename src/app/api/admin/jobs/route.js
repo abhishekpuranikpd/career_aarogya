@@ -13,7 +13,7 @@ export async function POST(req) {
       title, description, imageUrl, responsibilitiesPdf, applicationProcess, location, type, salary, examId,
       // New fields
       whatsappGroupLink, referenceIdPrefix, applicationStartDate, examStartDate, resultDate, inductionDate, joiningDate,
-      externalExamUrl
+      externalExamUrl, externalExamId, externalBatchId
     } = body;
 
     const job = await prisma.jobPost.create({
@@ -29,6 +29,8 @@ export async function POST(req) {
         exam: examId ? { connect: { id: examId } } : undefined,
         whatsappGroupLink: whatsappGroupLink || null,
         externalExamUrl: externalExamUrl || null,
+        externalExamId: externalExamId || null,
+        externalBatchId: externalBatchId || null,
         referenceIdPrefix: referenceIdPrefix ? referenceIdPrefix.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 4) : null,
         applicationStartDate: applicationStartDate ? new Date(applicationStartDate) : null,
         examStartDate: examStartDate ? new Date(examStartDate) : null,
