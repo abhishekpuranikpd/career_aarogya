@@ -67,7 +67,7 @@ export default async function ApplicantDetails({ params }) {
                             </div>
                             <div className="mt-4">
                                 <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm font-bold border border-blue-100">
-                                    History: {user.responses.length} Assessment(s) Taken
+                                    History: {user.responses.length} Exam(s) Taken
                                 </span>
                             </div>
                         </div>
@@ -84,15 +84,15 @@ export default async function ApplicantDetails({ params }) {
                     </div>
                 </div>
 
-                <h2 className="text-xl font-bold text-gray-900 mb-6">Assessment History</h2>
+                <h2 className="text-xl font-bold text-gray-900 mb-6">Exam History</h2>
 
                 {user.responses.length === 0 ? (
                     <div className="bg-white p-12 text-center rounded-xl shadow-sm border border-gray-200">
                         <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
                             <DocumentTextIcon className="w-8 h-8" />
                         </div>
-                        <h3 className="text-lg font-bold text-gray-900">No Assessment History</h3>
-                        <p className="text-gray-500">This candidate has not completed any assessments yet.</p>
+                        <h3 className="text-lg font-bold text-gray-900">No Exam History</h3>
+                        <p className="text-gray-500">This candidate has not completed any Exams yet.</p>
                     </div>
                 ) : (
                     <div className="space-y-8">

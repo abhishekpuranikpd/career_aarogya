@@ -275,7 +275,7 @@ export default function CreateJobPost() {
 
             {/* Linked Exam */}
             <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
-               <h3 className="font-semibold text-blue-900 mb-2">Assessment Link (Internal)</h3>
+               <h3 className="font-semibold text-blue-900 mb-2">Exam Link (Internal)</h3>
                <p className="text-sm text-blue-700 mb-4">Select the internal exam that applicants must take for this position.</p>
                
                <select 
@@ -292,7 +292,7 @@ export default function CreateJobPost() {
                   <Link href="/admin/exams/create" className="text-sm text-primary hover:underline font-medium">+ Create New Exam</Link>
                </div>
                <div className="mt-4 border-t border-blue-200 pt-4">
-                 <label className="block text-sm font-medium mb-1 text-blue-900">OR External Assessment Configuration (Agent Portal)</label>
+                 <label className="block text-sm font-medium mb-1 text-blue-900">OR External Exam Configuration (Agent Portal)</label>
                  <p className="text-xs text-blue-700 mb-2">Configure an external exam on Team Aarogya Aadhar portal.</p>
                  
                  <div className="space-y-4">

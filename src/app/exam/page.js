@@ -26,7 +26,7 @@ export default async function ExamList() {
   return (
     <div className="container mx-auto px-4 py-12">
       <h1 className="text-3xl font-bold text-gray-900 mb-2">Available Exams</h1>
-      <p className="text-gray-500 mb-8">Select an exam to proceed with your application assessment.</p>
+      <p className="text-gray-500 mb-8">Select an exam to proceed with your application Exam.</p>
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {exams.map((exam) => (
@@ -37,7 +37,7 @@ export default async function ExamList() {
               </span>
             </div>
             <h3 className="text-xl font-bold mb-2">{exam.title}</h3>
-            <p className="text-gray-500 mb-6 text-sm">{exam.description || "Complete this assessment to qualify."}</p>
+            <p className="text-gray-500 mb-6 text-sm">{exam.description || "Complete this Exam to qualify."}</p>
             <Link href={`/exam/${exam.id}`} className="block w-full py-2 text-center border border-primary text-primary rounded-lg font-medium hover:bg-primary hover:text-white transition-colors">
               Start Exam
             </Link>

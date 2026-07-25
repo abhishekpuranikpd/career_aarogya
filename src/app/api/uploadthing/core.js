@@ -3,7 +3,7 @@ import { createUploadthing } from "uploadthing/next";
 const f = createUploadthing();
 
 export const ourFileRouter = {
-  resumeUploader: f({ pdf: { maxFileSize: "4MB" }, blob: { maxFileSize: "4MB" } })
+  resumeUploader: f({ pdf: { maxFileSize: "1MB" }, blob: { maxFileSize: "1MB" } })
     .onUploadError(async ({ error }) => {
       console.error("!!! UploadThing Server Error !!!", error);
     })

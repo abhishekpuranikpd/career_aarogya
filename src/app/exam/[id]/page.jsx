@@ -208,7 +208,7 @@ export default function ExamSession({ params }) {
         }
     };
 
-    if (loading) return <div className="p-12 text-center text-gray-500">Loading assessment...</div>;
+    if (loading) return <div className="p-12 text-center text-gray-500">Loading Exam...</div>;
 
     // Check Time Window
     if (examMetadata) {
@@ -225,8 +225,8 @@ export default function ExamSession({ params }) {
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                         </div>
-                        <h2 className="text-2xl font-bold text-gray-900 mb-2">Assessment Not Started</h2>
-                        <p className="text-gray-500 mb-6">This assessment is scheduled to start on:</p>
+                        <h2 className="text-2xl font-bold text-gray-900 mb-2">Exam Not Started</h2>
+                        <p className="text-gray-500 mb-6">This Exam is scheduled to start on:</p>
                         <div className="bg-blue-50 p-4 rounded-xl text-blue-900 font-bold text-lg mb-6">
                             {start.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
                         </div>
@@ -245,8 +245,8 @@ export default function ExamSession({ params }) {
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
                             </svg>
                         </div>
-                        <h2 className="text-2xl font-bold text-gray-900 mb-2">Assessment Expired</h2>
-                        <p className="text-gray-500 mb-6">The window for this assessment has closed on:</p>
+                        <h2 className="text-2xl font-bold text-gray-900 mb-2">Exam Expired</h2>
+                        <p className="text-gray-500 mb-6">The window for this Exam has closed on:</p>
                         <div className="bg-red-50 p-4 rounded-xl text-red-900 font-bold text-lg mb-6">
                             {end.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
                         </div>
@@ -261,8 +261,8 @@ export default function ExamSession({ params }) {
         return (
             <div className="min-h-[60vh] flex flex-col items-center justify-center p-4 text-center">
                 <CheckCircleIcon className="w-20 h-20 text-green-500 mb-6" />
-                <h2 className="text-3xl font-bold text-gray-900 mb-2">Assessment Completed</h2>
-                <p className="text-gray-500 mb-8 max-w-md">You have already completed this assessment. Our team is reviewing your application.</p>
+                <h2 className="text-3xl font-bold text-gray-900 mb-2">Exam Completed</h2>
+                <p className="text-gray-500 mb-8 max-w-md">You have already completed this Exam. Our team is reviewing your application.</p>
                 <button
                     onClick={() => router.push('/')}
                     className="px-8 py-3 bg-gray-900 text-white rounded-full font-medium hover:bg-black transition-all shadow-lg hover:shadow-xl"
@@ -445,7 +445,7 @@ export default function ExamSession({ params }) {
                             onClick={() => setTermsAccepted(true)}
                             className="w-full py-4 bg-primary text-white rounded-xl font-bold text-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl disabled:shadow-none"
                         >
-                            Start Assessment
+                            Start Exam
                         </button>
                     </div>
                 </div>
@@ -466,7 +466,7 @@ export default function ExamSession({ params }) {
                         </div>
                         <h2 className="text-2xl font-bold text-gray-900 mb-4">Security Warning</h2>
                         <p className="text-gray-600 mb-6 text-lg">
-                            You are not allowed to switch tabs or open new windows during the assessment.
+                            You are not allowed to switch tabs or open new windows during the Exam.
                         </p>
                         <p className="text-sm text-red-500 font-bold mb-8 uppercase tracking-widest">
                             Multiple violations will lead to disqualification.
@@ -475,7 +475,7 @@ export default function ExamSession({ params }) {
                             onClick={() => setSecurityWarning(false)}
                             className="w-full py-4 bg-red-600 text-white font-bold rounded-xl text-lg hover:bg-red-700 transition shadow-lg"
                         >
-                            I Understand, Return to Assessment
+                            I Understand, Return to Exam
                         </button>
                     </div>
                 </div>
@@ -495,7 +495,7 @@ export default function ExamSession({ params }) {
 
                     {/* Screen Header */}
                     <div className="print:hidden">
-                        <h1 className="text-3xl font-bold text-gray-900 mb-3">Assessment</h1>
+                        <h1 className="text-3xl font-bold text-gray-900 mb-3">Exam</h1>
                         <p className="text-gray-500 mb-6">Please answer all questions honestly and to the best of your ability.</p>
 
                         <div className="w-full max-w-2xl bg-amber-50 border border-amber-200 rounded-xl p-6 mb-8 text-left mx-auto">
@@ -521,7 +521,7 @@ export default function ExamSession({ params }) {
                                 <span className="text-xl font-bold">Livo Aarogya Aadhar PVT LTD</span>
                             </div>
                             <div className="text-xl font-bold uppercase tracking-wider text-right">
-                                Assessment Paper
+                                Exam Paper
                             </div>
                         </div>
 
@@ -722,7 +722,7 @@ export default function ExamSession({ params }) {
                                 </svg>
                                 Submitting Response...
                             </span>
-                        ) : 'Submit Assessment'}
+                        ) : 'Submit Exam'}
                     </button>
                 </div>
             </div>

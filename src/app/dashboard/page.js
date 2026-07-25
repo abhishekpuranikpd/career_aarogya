@@ -178,15 +178,15 @@ export default async function UserDashboard() {
                            <span className={`absolute -left-[43px] w-7 h-7 rounded-full flex items-center justify-center text-sm shadow-sm ring-4 ring-white transition-colors ${latestResponse ? 'bg-green-500 text-white' : 'bg-blue-600 text-white animate-pulse'}`}>
                              {latestResponse ? '✓' : '2'}
                            </span>
-                           <h3 className="font-bold text-gray-900 text-lg">Online Assessment</h3>
+                           <h3 className="font-bold text-gray-900 text-lg">Online Exam</h3>
                            
                            {latestResponse ? (
                              <>
                                <p className="text-sm text-gray-500">{new Date(latestResponse.submittedAt).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}</p>
-                               <p className="text-sm mt-1 text-gray-600">Assessment submitted successfully.</p>
+                               <p className="text-sm mt-1 text-gray-600">Exam submitted successfully.</p>
                                {latestResponse.score !== null && (
                                    <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-100 inline-block">
-                                       <span className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-1">Assessment Score</span>
+                                       <span className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-1">Exam Score</span>
                                        <span className="text-xl font-black text-blue-900">{latestResponse.score} <span className="text-sm text-gray-500 font-medium">/ 10</span></span>
                                    </div>
                                )}
@@ -197,10 +197,10 @@ export default async function UserDashboard() {
                                     <div className="text-center py-2">
                                         <div className="inline-flex items-center gap-2 text-amber-600 font-bold mb-2 bg-amber-50 px-3 py-1 rounded-full border border-amber-100 text-sm">
                                             <ClockIcon className="w-4 h-4" />
-                                            Assessment Not Yet Active
+                                            Exam Not Yet Active
                                         </div>
                                         <p className="text-gray-600 text-sm mb-4 max-w-md mx-auto">
-                                            The assessment window has not started yet. Please come back and login at the scheduled time.
+                                            The Exam window has not started yet. Please come back and login at the scheduled time.
                                         </p>
                                         <div className="bg-white p-3 rounded border border-blue-100 inline-block text-left text-sm">
                                             <p className="text-gray-500 text-xs uppercase font-bold tracking-wider mb-1">Scheduled Window (IST)</p>
@@ -213,16 +213,16 @@ export default async function UserDashboard() {
                                     <div className="text-center py-2">
                                         <div className="inline-flex items-center gap-2 text-red-600 font-bold mb-2 bg-red-50 px-3 py-1 rounded-full border border-red-100 text-sm">
                                             <XCircleIcon className="w-4 h-4" />
-                                            Assessment Expired
+                                            Exam Expired
                                         </div>
                                         <p className="text-gray-600 text-sm">
-                                            The window for this assessment has closed.
+                                            The window for this Exam has closed.
                                         </p>
                                     </div>
                                 ) : (
                                     <>
                                         <p className="text-blue-900 font-medium mb-3">Action Required</p>
-                                        <p className="text-sm text-gray-600 mb-4">Please complete the mandatory assessment to proceed.</p>
+                                        <p className="text-sm text-gray-600 mb-4">Please complete the mandatory Exam to proceed.</p>
                                         
                                         <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4 rounded-r">
                                             <div className="flex items-start">
@@ -278,7 +278,7 @@ export default async function UserDashboard() {
                                                     rel="noopener noreferrer"
                                                     className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition shadow-sm hover:shadow"
                                                 >
-                                                    Take Assessment Now (External Link)
+                                                    Take Exam Now (External Link)
                                                 </a>
                                             </div>
                                         ) : (
@@ -286,7 +286,7 @@ export default async function UserDashboard() {
                                                 href={`/exam/${user.jobPost.examId}`} 
                                                 className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition shadow-sm hover:shadow"
                                             >
-                                              Take Assessment Now
+                                              Take Exam Now
                                             </Link>
                                         )}
                                     </>
@@ -297,7 +297,7 @@ export default async function UserDashboard() {
                      ) : (
                         <div className="relative group opacity-50">
                             <span className="absolute -left-[43px] bg-gray-200 text-gray-500 w-7 h-7 rounded-full flex items-center justify-center text-sm ring-4 ring-white">2</span>
-                            <h3 className="font-bold text-gray-500 text-lg">Online Assessment</h3>
+                            <h3 className="font-bold text-gray-500 text-lg">Online Exam</h3>
                             <p className="text-sm text-gray-400 mt-1">Not required for this role.</p>
                         </div>
                      )}
@@ -337,7 +337,7 @@ export default async function UserDashboard() {
                             </div>
                           )}
                          {user.examStatus === 'REJECTED' && <span className="text-red-600">Application not selected at this time.</span>}
-                         {user.examStatus === 'PASSED' && "Assessment Passed. Identifying Next Steps."}
+                         {user.examStatus === 'PASSED' && "Exam Passed. Identifying Next Steps."}
                        </p>
                      </div>
         

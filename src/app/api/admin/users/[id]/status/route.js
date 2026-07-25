@@ -32,7 +32,7 @@ export async function PUT(req, { params }) {
         } else if (status === 'REJECTED') {
             message += `Thank you for your interest. Unfortunately, we have decided to move forward with other candidates at this time.\n\n`;
         } else if (status === 'PASSED') {
-            message += `You have successfully passed the assessment phase. We will review your profile and get back to you.\n\n`;
+            message += `You have successfully passed the Exam phase. We will review your profile and get back to you.\n\n`;
         }
 
         message += `You can check your status anytime on your dashboard: ${process.env.NEXT_PUBLIC_BASE_URL}/dashboard\n\nRegards,\nLivo Aarogya Aadhar Team`;

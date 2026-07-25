@@ -45,7 +45,7 @@ export default function ApplyButton({ jobId, jobTitle }) {
         }
     };
 
-    // If applied (state or previously), show "Take Assessment" or "Applied"
+    // If applied (state or previously), show "Take Exam" or "Applied"
     // Note: For full persistence, we'd check user.jobPostId from session or DB, 
     // but for this interaction, local state + session check is a good start.
 

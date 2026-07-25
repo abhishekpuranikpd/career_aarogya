@@ -95,8 +95,8 @@ export default async function JobDetailsPage({ params }) {
                             <ol className="list-decimal list-inside space-y-3 text-blue-800">
                                 <li>Click the <strong>Apply Now</strong> button.</li>
                                 <li>Fill in your personal details and upload your resume.</li>
-                                <li>You will be redirected to the <strong>{job.exam?.title || 'Online Assessment'}</strong>.</li>
-                                <li>Complete the assessment to finalize your application.</li>
+                                <li>You will be redirected to the <strong>{job.exam?.title || 'Online Exam'}</strong>.</li>
+                                <li>Complete the Exam to finalize your application.</li>
                             </ol>
                         </div>
                     )}
@@ -134,7 +134,7 @@ export default async function JobDetailsPage({ params }) {
                                 )}
                                 {job.examStartDate && (
                                     <div className="flex justify-between items-center text-xs">
-                                        <span className="text-gray-500">Assessment Date</span>
+                                        <span className="text-gray-500">Exam Starts</span>
                                         <span className="font-semibold text-gray-900">{formatDate(job.examStartDate)}</span>
                                     </div>
                                 )}

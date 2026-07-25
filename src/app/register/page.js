@@ -670,7 +670,7 @@ function RegisterForm() {
                  />
                )}
             </div>
-            <p className="text-xs text-gray-400 text-center">Supported formats: PDF, DOCX (Max 4MB)</p>
+            <p className="text-xs text-gray-400 text-center">Supported formats: PDF (Max 1MB) and docs</p>
           </div>
 
           <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 text-sm text-blue-700">

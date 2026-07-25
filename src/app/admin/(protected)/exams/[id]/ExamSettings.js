@@ -65,7 +65,7 @@ export default function ExamSettings({ exam }) {
 
     return (
         <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 mb-8 animate-fadeIn">
-            <h3 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Assessment Settings</h3>
+            <h3 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Exam Settings</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>

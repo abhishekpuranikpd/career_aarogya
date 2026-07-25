@@ -136,19 +136,19 @@ export default function CreateExam() {
         
         <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
           <div className="bg-white p-8 border-b border-gray-100">
-             <h1 className="text-2xl font-bold text-gray-900">Create New Assessment</h1>
+             <h1 className="text-2xl font-bold text-gray-900">Create New Exam</h1>
              <p className="text-gray-500 text-sm mt-1">Design your exam with multiple question types.</p>
           </div>
           
           <form onSubmit={handleSubmit} className="p-8 space-y-8">
             {/* Exam Title */}
             <div>
-              <label className="block text-sm font-bold mb-2 text-gray-700">Assessment Title</label>
+              <label className="block text-sm font-bold mb-2 text-gray-700">Exam Title</label>
               <input 
                 type="text" 
                 required
                 className="w-full border p-4 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-lg transition-all"
-                placeholder="e.g. Senior Nursing Staff Assessment 2024"
+                placeholder="e.g. Senior Nursing Staff Exam 2024"
                 value={title}
                 onChange={e => setTitle(e.target.value)}
               />
@@ -324,7 +324,7 @@ export default function CreateExam() {
                         disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto
                     "
                 >
-                    {loading ? "Creating..." : "Publish Assessment"}
+                    {loading ? "Creating..." : "Publish Exam"}
                 </button>
             </div>
           </form>
