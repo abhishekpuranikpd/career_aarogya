@@ -6,6 +6,7 @@ import { extractRouterConfig } from "uploadthing/server";
 import { ourFileRouter } from "@/app/api/uploadthing/core";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import AppRedirect from "@/components/AppRedirect";
 
 const poppins = Poppins({ 
   subsets: ["latin"], 
@@ -28,17 +29,19 @@ export default function RootLayout({ children }) {
         <Providers>
           <NextSSRPlugin routerConfig={extractRouterConfig(ourFileRouter)} />
           
-          <div className="print:hidden">
-            <Navbar />
-          </div>
+          <AppRedirect>
+            <div className="print:hidden">
+              <Navbar />
+            </div>
 
-          <main className="min-h-[calc(100vh-64px)]">
-            {children}
-          </main>
+            <main className="min-h-[calc(100vh-64px)]">
+              {children}
+            </main>
 
-          <div className="print:hidden">
-            <Footer />
-          </div>
+            <div className="print:hidden">
+              <Footer />
+            </div>
+          </AppRedirect>
         </Providers>
       </body>
     </html>
