@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   DevicePhoneMobileIcon,
@@ -12,8 +13,16 @@ import {
 
 export default function AppRedirect({ children }) {
   const [status, setStatus] = useState("loading");
+  const pathname = usePathname();
 
   useEffect(() => {
+    // Check if the current route is an admin route
+    // Only bypass for /admin (which includes /admin/login)
+    if (pathname && pathname.startsWith('/admin')) {
+      setStatus("app");
+      return;
+    }
+
     const userAgent = navigator.userAgent || navigator.vendor || window.opera;
     const isWebView = /wv/i.test(userAgent) || (window.Android && window.Android.inApp);
 
@@ -22,7 +31,11 @@ export default function AppRedirect({ children }) {
     } else {
       setStatus("outside_app");
     }
-  }, []);
+  }, [pathname]);
+
+  if (status === "app") {
+    return <>{children}</>;
+  }
 
   if (status === "loading") {
     return (
