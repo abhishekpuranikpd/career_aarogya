@@ -19,18 +19,19 @@ export default function ApplicantsTable({
     const [minScore, setMinScore] = useState(""); // NEW: Min Score Filter
     const [dateFilter, setDateFilter] = useState("All"); // NEW: Date Filter (Newest/Oldest)
     const [page, setPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(10); // NEW: Items per page
+    const [itemsPerPage, setItemsPerPage] = useState(9999); // Default to All
 
     // Filter & Sort
     const filteredResponses = responses.filter(r => {
-        const nameMatch = r.user.name.toLowerCase().includes(search.toLowerCase());
-        const emailMatch = r.user.email.toLowerCase().includes(search.toLowerCase());
-        const matchesSearch = nameMatch || emailMatch;
+        const searchLower = search.toLowerCase();
+        const nameMatch = r.user?.name?.toLowerCase().includes(searchLower) || false;
+        const emailMatch = r.user?.email?.toLowerCase().includes(searchLower) || false;
+        const matchesSearch = search === "" || nameMatch || emailMatch;
 
-        const matchesStatus = statusFilter === "All" || r.user.examStatus === statusFilter;
+        const matchesStatus = statusFilter === "All" || r.user?.examStatus === statusFilter;
 
         // Min Score Filter
-        const score = r.score !== null ? r.score : 0;
+        const score = r.score !== null && r.score !== undefined ? r.score : 0;
         const matchesScore = minScore === "" || score >= Number(minScore);
 
         return matchesSearch && matchesStatus && matchesScore;
@@ -244,6 +245,7 @@ export default function ApplicantsTable({
                         <option value={20}>20</option>
                         <option value={50}>50</option>
                         <option value={100}>100</option>
+                        <option value={9999}>All</option>
                     </select>
                 </div>
 

@@ -11,17 +11,33 @@ export async function GET(req) {
   }
 
   try {
+    const { searchParams } = new URL(req.url);
+    const page = parseInt(searchParams.get("page")) || 1;
+    const limit = parseInt(searchParams.get("limit")) || 50;
+    const skip = (page - 1) * limit;
+
     const users = await prisma.user.findMany({
+      skip,
+      take: limit,
       orderBy: { createdAt: 'desc' },
-      include: {
-        responses: {
-          include: {
-            exam: true
-          }
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        referenceId: true,
+        examStatus: true,
+        positionApplied: true,
+        createdAt: true,
+        jobPost: {
+          select: { title: true }
         }
       }
     });
-    return NextResponse.json(users);
+    
+    // Check if there are more users
+    const hasMore = users.length === limit;
+    
+    return NextResponse.json({ users, hasMore });
   } catch (error) {
     return NextResponse.json({ error: 'Error fetching users' }, { status: 500 });
   }

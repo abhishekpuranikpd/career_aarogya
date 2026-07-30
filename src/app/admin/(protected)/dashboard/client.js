@@ -184,7 +184,33 @@ export default function DashboardClient({ initialData, baseUrl }) {
   const [statusFilter, setStatusFilter] = useState("All"); 
   const [sortFilter, setSortFilter] = useState("Newest"); // NEW: Sort State
   const [candidatePage, setCandidatePage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10); // NEW: Items per page state
+  const [itemsPerPage, setItemsPerPage] = useState(50); // Changed default to 50
+
+  // --- LAZY LOADING STATE ---
+  const [hasMoreUsers, setHasMoreUsers] = useState(users.all.length >= 50);
+  const [loadingMoreUsers, setLoadingMoreUsers] = useState(false);
+  const [usersApiPage, setUsersApiPage] = useState(1);
+
+  const loadMoreUsers = async () => {
+    if (loadingMoreUsers || !hasMoreUsers) return;
+    setLoadingMoreUsers(true);
+    try {
+      const nextPage = usersApiPage + 1;
+      const res = await fetch(`/api/admin/users?page=${nextPage}&limit=50`);
+      const data = await res.json();
+      if (data.users && data.users.length > 0) {
+        setUsersList(prev => [...prev, ...data.users]);
+        setHasMoreUsers(data.hasMore);
+        setUsersApiPage(nextPage);
+      } else {
+        setHasMoreUsers(false);
+      }
+    } catch (error) {
+      console.error("Failed to load more users", error);
+    } finally {
+      setLoadingMoreUsers(false);
+    }
+  };
 
   // --- EXAMS STATE ---
   const [examsList, setExamsList] = useState(exams.all);
@@ -260,8 +286,9 @@ export default function DashboardClient({ initialData, baseUrl }) {
 
   // --- FILTERING LOGIC ---
   const filteredUsers = usersList.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(userSearch.toLowerCase()) || 
-                          user.email.toLowerCase().includes(userSearch.toLowerCase());
+    const searchLower = userSearch.toLowerCase();
+    const matchesSearch = (user.name?.toLowerCase() || "").includes(searchLower) || 
+                          (user.email?.toLowerCase() || "").includes(searchLower);
     const matchedPos = user.positionApplied || (user.jobPost ? user.jobPost.title : "General");
     const matchesPosition = positionFilter === "All" || matchedPos === positionFilter;
     const matchesStatus = statusFilter === "All" || user.examStatus === statusFilter;
@@ -933,6 +960,25 @@ export default function DashboardClient({ initialData, baseUrl }) {
                    itemsPerPage={itemsPerPage}
                    setItemsPerPage={setItemsPerPage}
                />
+               {hasMoreUsers && (
+                 <div className="p-4 bg-gray-50 flex justify-center border-t border-gray-200">
+                   <button 
+                     onClick={loadMoreUsers} 
+                     disabled={loadingMoreUsers}
+                     className="px-6 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition shadow-sm flex items-center gap-2"
+                   >
+                     {loadingMoreUsers ? (
+                       <>
+                         <svg className="animate-spin h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24">
+                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                         </svg>
+                         Loading...
+                       </>
+                     ) : "Load More Applicants from Database"}
+                   </button>
+                 </div>
+               )}
              </div>
            </div>
         )}
