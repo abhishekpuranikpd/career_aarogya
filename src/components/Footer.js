@@ -23,9 +23,9 @@ export default function Footer() {
   return (
     <footer className="bg-white border-t border-gray-100 pt-12 pb-8 mt-auto">
       <div className="container mx-auto px-4">
-        
+
         {/* Logos Section */}
-        <div className="flex flex-wrap justify-center items-center gap-8 mb-8 opacity-90 grayscale hover:grayscale-0 transition-all duration-500">
+        {/* <div className="flex flex-wrap justify-center items-center gap-8 mb-8 opacity-90 grayscale hover:grayscale-0 transition-all duration-500">
            {partners.map((p, idx) => (
              <div key={idx} className="relative h-16 w-32 sm:w-40 transition-transform hover:scale-105">
                <Image 
@@ -36,14 +36,14 @@ export default function Footer() {
                />
              </div>
            ))}
-        </div>
+        </div> */}
 
         <div className="border-t border-gray-100 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
           <p>&copy; {new Date().getFullYear()} Livo Aarogya Aadhar PVT LTD. All rights reserved.</p>
           <div className="flex gap-6 mt-4 md:mt-0">
-             <a href="#" className="hover:text-primary transition">Privacy Policy</a>
-             <a href="#" className="hover:text-primary transition">Terms of Service</a>
-             <a href="#" className="hover:text-primary transition">Contact Support</a>
+            <a href="#" className="hover:text-primary transition">Privacy Policy</a>
+            <a href="#" className="hover:text-primary transition">Terms of Service</a>
+            <a href="#" className="hover:text-primary transition">Contact Support</a>
           </div>
         </div>
       </div>

@@ -81,6 +81,9 @@ export async function POST(req, { params }) {
             $set: { 
               batchId: new ObjectId(batchIdToUse),
               pin: generatePin(),
+              name: applicant.name || null,
+              mobile: applicant.mobile || null,
+              resumeUrl: applicant.resumeUrl || null,
               updatedAt: new Date()
             } 
           }
@@ -92,6 +95,9 @@ export async function POST(req, { params }) {
           batchId: new ObjectId(batchIdToUse),
           email: email,
           pin: generatePin(),
+          name: applicant.name || null,
+          mobile: applicant.mobile || null,
+          resumeUrl: applicant.resumeUrl || null,
           status: "PENDING",
           hiringStatus: "PENDING",
           warningsCount: 0,
