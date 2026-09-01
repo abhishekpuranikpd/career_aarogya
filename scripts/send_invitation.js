@@ -56,7 +56,7 @@ async function sendInvite() {
         // Correct Link: Redirect to Register page with Job ID and Title
         const encodedTitle = encodeURIComponent(job.title);
         const examLink = `https://career.aarogyaaadhar.com/register?jobId=${job.id}&title=${encodedTitle}`;
-        const logoUrl = "https://res.cloudinary.com/dorreici1/image/upload/v1763636388/420a5318-cb6c-4915-a728-979d8973a9d1.png";
+        const logoUrl = "https://utfs.io/f/bIYGoxfChy4RE4ibQB5sCyHGfnltA6r0WwXDUR1jaLqNTcJO";
 
         // HTML Template Generator
         const getHtml = () => `

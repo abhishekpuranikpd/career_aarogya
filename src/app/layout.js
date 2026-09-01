@@ -18,7 +18,7 @@ export const metadata = {
   title: "Career - Livo Aarogya Aadhar PVT LTD",
   description: "Join our team at Livo Aarogya Aadhar PVT LTD",
   icons: {
-    icon: "https://res.cloudinary.com/dorreici1/image/upload/v1763636388/420a5318-cb6c-4915-a728-979d8973a9d1.png",
+    icon: "https://utfs.io/f/bIYGoxfChy4RE4ibQB5sCyHGfnltA6r0WwXDUR1jaLqNTcJO",
   },
 };
 

@@ -16,9 +16,9 @@ export default function AppRedirect({ children }) {
   const pathname = usePathname();
 
   useEffect(() => {
-    // Check if the current route is an admin route
-    // Only bypass for /admin (which includes /admin/login)
-    if (pathname && pathname.startsWith('/admin')) {
+    // Check if the current route is an admin route or password reset route
+    // Only bypass for /admin (which includes /admin/login) and /reset-password
+    if (pathname && (pathname.startsWith('/admin') || pathname.startsWith('/reset-password'))) {
       setStatus("app");
       return;
     }
@@ -162,7 +162,7 @@ export default function AppRedirect({ children }) {
             >
               <div className="bg-white p-4 rounded-[1.25rem] shadow-[0_10px_25px_-5px_rgba(0,0,0,0.3)] mb-6 ring-4 ring-white/20">
                 <img
-                  src="https://res.cloudinary.com/dorreici1/image/upload/v1763636388/420a5318-cb6c-4915-a728-979d8973a9d1.png"
+                  src="https://utfs.io/f/bIYGoxfChy4RE4ibQB5sCyHGfnltA6r0WwXDUR1jaLqNTcJO"
                   alt="Logo"
                   className="h-16 w-16 object-contain"
                 />

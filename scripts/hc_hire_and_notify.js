@@ -128,7 +128,7 @@ const getHtml = (name, refId, batchNumber, slotStart, slotEnd) => `
     <body>
         <div class="container">
             <div class="header">
-                <img src="https://res.cloudinary.com/dorreici1/image/upload/v1763636388/420a5318-cb6c-4915-a728-979d8973a9d1.png" alt="Aarogya Aadhar" class="logo-img" />
+                <img src="https://utfs.io/f/bIYGoxfChy4RE4ibQB5sCyHGfnltA6r0WwXDUR1jaLqNTcJO" alt="Aarogya Aadhar" class="logo-img" />
                 <div class="subtitle">Healthcare Internship Program</div>
             </div>
             <div class="content">
