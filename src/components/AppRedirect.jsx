@@ -16,9 +16,14 @@ export default function AppRedirect({ children }) {
   const pathname = usePathname();
 
   useEffect(() => {
-    // Check if the current route is an admin route or password reset route
-    // Only bypass for /admin (which includes /admin/login) and /reset-password
-    if (pathname && (pathname.startsWith('/admin') || pathname.startsWith('/reset-password'))) {
+    // Check if the current route is allowed in browser
+    if (pathname && (
+      pathname.startsWith('/admin') || 
+      pathname.startsWith('/reset-password') ||
+      pathname.startsWith('/login') ||
+      pathname.startsWith('/dashboard') ||
+      pathname.startsWith('/exam')
+    )) {
       setStatus("app");
       return;
     }
@@ -183,6 +188,21 @@ export default function AppRedirect({ children }) {
               >
                 Our careers portal is exclusively available on our mobile application. <strong>All processes will happen through our official app only.</strong> Follow these simple steps to start applying.
               </motion.p>
+
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.6 }}
+                className="mt-8 flex justify-center"
+              >
+                <a
+                  href="/login"
+                  className="px-8 py-3.5 text-blue-600 font-semibold bg-white hover:bg-blue-50 rounded-xl transition-colors shadow-lg flex items-center gap-2"
+                >
+                  <ArrowRightOnRectangleIcon className="w-5 h-5" />
+                  Continue to Web Login
+                </a>
+              </motion.div>
             </motion.div>
           </div>
 
