@@ -168,3 +168,26 @@ model TestDataset {
   gender     String
   createdAt  DateTime @default(now())
 }
+
+model PatientData {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  firstName       String
+  lastName        String
+  dateOfBirth     String   // or DateTime
+  village         String
+  taluka          String
+  district        String
+  pinCode         String
+  abhaId          String
+  ayushmanCard    String
+  healthInsurance String
+  aadhaarNo       String
+  emailId         String
+  phoneNumber     String
+  bp              String
+  height          String
+  weight          String
+  sugar           String
+  ecg             String
+  createdAt       DateTime @default(now())
+}

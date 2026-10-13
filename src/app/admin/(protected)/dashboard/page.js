@@ -14,7 +14,7 @@ export default async function AdminDashboard() {
   }
 
   // 🚀 OPTIMIZED QUERIES (lightweight + fast)
-  const [users, jobs, exams, responses, activeOtps] = await Promise.all([
+  const [users, jobs, exams, responses, activeOtps, totalUserCount, userStatusCounts] = await Promise.all([
 
     // ✅ USERS (limited + selected fields only)
     prisma.user.findMany({
@@ -117,6 +117,15 @@ export default async function AdminDashboard() {
     // ✅ OTP COUNT
     prisma.verificationCode.count({
       where: { expires: { gt: new Date() } }
+    }),
+
+    // ✅ TRUE USER COUNT
+    prisma.user.count(),
+
+    // ✅ STATUS BREAKDOWN
+    prisma.user.groupBy({
+      by: ['examStatus'],
+      _count: { id: true }
     })
 
   ]);
@@ -124,8 +133,6 @@ export default async function AdminDashboard() {
   // =========================
   // 📊 PROCESSING (lightweight)
   // =========================
-
-  const totalUsers = users.length;
 
   const recentUsers = users.slice(0, 5);
 
@@ -136,24 +143,20 @@ export default async function AdminDashboard() {
     return acc;
   }, {});
 
-  // Application funnel
+  const statusMap = {};
+  userStatusCounts.forEach(s => {
+    statusMap[s.examStatus] = s._count.id;
+  });
+
+  // Application funnel with real database stats
   const applicationFunnel = {
-    Total: totalUsers,
-    Pending: users.filter(u => u.examStatus === 'PENDING').length,
-    ExamCompleted: users.filter(u =>
-      ['COMPLETED', 'PASSED', 'FAILED', 'INTERVIEW', 'HIRED', 'REJECTED']
-        .includes(u.examStatus)
-    ).length,
-    passed: users.filter(u =>
-      ['PASSED', 'INTERVIEW', 'HIRED', 'REJECTED']
-        .includes(u.examStatus)
-    ).length,
-    interview: users.filter(u =>
-      ['INTERVIEW', 'HIRED', 'REJECTED']
-        .includes(u.examStatus)
-    ).length,
-    hired: users.filter(u => u.examStatus === 'HIRED').length,
-    rejected: users.filter(u => u.examStatus === 'REJECTED').length
+    Total: totalUserCount,
+    Pending: statusMap['PENDING'] || 0,
+    ExamCompleted: totalUserCount - (statusMap['PENDING'] || 0),
+    passed: (statusMap['PASSED'] || 0) + (statusMap['INTERVIEW'] || 0) + (statusMap['HIRED'] || 0),
+    interview: (statusMap['INTERVIEW'] || 0) + (statusMap['HIRED'] || 0),
+    hired: statusMap['HIRED'] || 0,
+    rejected: statusMap['REJECTED'] || 0
   };
 
   // Jobs stats

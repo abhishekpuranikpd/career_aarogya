@@ -12,6 +12,9 @@ export async function GET(req, { params }) {
   const { id } = await params;
 
   try {
+    const { searchParams } = new URL(req.url);
+    const jobPostId = searchParams.get('jobPostId');
+
     // 1. Fetch Exam (to get question headers) and Responses
     const exam = await prisma.exam.findUnique({
         where: { id },
@@ -20,8 +23,17 @@ export async function GET(req, { params }) {
 
     if (!exam) return NextResponse.json({ error: "Exam not found" }, { status: 404 });
 
+    const whereClause = { examId: id };
+    if (jobPostId && jobPostId !== 'all') {
+      if (jobPostId === 'uncategorized') {
+        whereClause.user = { jobPostId: null };
+      } else {
+        whereClause.user = { jobPostId: jobPostId };
+      }
+    }
+
     const responses = await prisma.response.findMany({
-        where: { examId: id },
+        where: whereClause,
         include: {
             user: {
                 include: { jobPost: true } // to get applying position
@@ -38,6 +50,7 @@ export async function GET(req, { params }) {
         "Mobile",
         "Position Applied",
         "Status",
+        "Score",
         "Submitted At"
     ];
 
@@ -52,12 +65,13 @@ export async function GET(req, { params }) {
 
     responses.forEach(r => {
         const row = [];
-        row.push(`"${r.user.name || ''}"`);
-        row.push(`"${r.user.email || ''}"`);
-        row.push(`"${r.user.mobile || ''}"`);
-        row.push(`"${r.user.positionApplied || r.user.jobPost?.title || ''}"`);
-        row.push(`"${r.user.examStatus}"`);
-        row.push(`"${new Date(r.submittedAt).toLocaleString()}"`);
+        row.push(`"${r.user?.name || ''}"`);
+        row.push(`"${r.user?.email || ''}"`);
+        row.push(`"${r.user?.mobile || ''}"`);
+        row.push(`"${r.user?.positionApplied || r.user?.jobPost?.title || ''}"`);
+        row.push(`"${r.user?.examStatus || 'PENDING'}"`);
+        row.push(`"${r.score !== null && r.score !== undefined ? r.score : 'N/A'}"`);
+        row.push(`"${new Date(r.submittedAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}"`);
 
         // Parse answers
         let answers = {};

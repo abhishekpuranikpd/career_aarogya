@@ -46,7 +46,7 @@ export default async function UserDashboard() {
   }
   const pendingExam = user.jobPost?.examId && !latestResponse;
 
-  // Exam Time Window Logic
+  // Exam Time Window & Result Declaration Logic
   const now = new Date();
   const exam = user.jobPost?.exam;
   const start = exam?.windowStart ? new Date(exam.windowStart) : null;
@@ -54,6 +54,9 @@ export default async function UserDashboard() {
   
   const notStarted = start && now < start;
   const expired = end && now > end;
+
+  const resultDate = user.jobPost?.resultDate ? new Date(user.jobPost.resultDate) : null;
+  const isResultDeclared = !resultDate || now >= resultDate;
 
   // External Exam PIN fetching
   let externalPin = null;
@@ -184,10 +187,61 @@ export default async function UserDashboard() {
                              <>
                                <p className="text-sm text-gray-500">{new Date(latestResponse.submittedAt).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}</p>
                                <p className="text-sm mt-1 text-gray-600">Exam submitted successfully.</p>
-                               {latestResponse.score !== null && (
-                                   <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-100 inline-block">
-                                       <span className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-1">Exam Score</span>
-                                       <span className="text-xl font-black text-blue-900">{latestResponse.score} <span className="text-sm text-gray-500 font-medium">/ 10</span></span>
+                               
+                               {!isResultDeclared ? (
+                                   <div className="mt-4 p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 shadow-sm max-w-xl">
+                                       <div className="flex items-center gap-2 mb-2">
+                                           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800">
+                                               ⏳ Result Announcement Scheduled
+                                           </span>
+                                       </div>
+                                       <p className="text-sm text-gray-800 font-medium">
+                                           Your exam responses are submitted and currently under evaluation. Official results & scores will be declared on:
+                                       </p>
+                                       <p className="text-base font-extrabold text-amber-900 mt-1">
+                                           {resultDate.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'full', timeStyle: 'short' })}
+                                       </p>
+                                       <p className="text-xs text-gray-500 mt-1">
+                                           Please check back on this dashboard at the scheduled time to see your score and next steps.
+                                       </p>
+                                   </div>
+                               ) : (
+                                   <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200 shadow-sm max-w-xl">
+                                       <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
+                                           <span className="text-xs font-bold text-blue-600 uppercase tracking-widest">
+                                               Exam Score Card
+                                           </span>
+                                           {resultDate && (
+                                               <span className="text-[11px] font-semibold text-gray-500 bg-white px-2 py-0.5 rounded border border-blue-100">
+                                                   Announced: {resultDate.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}
+                                               </span>
+                                           )}
+                                       </div>
+
+                                       {latestResponse.score !== null ? (
+                                           <div className="flex items-baseline gap-3">
+                                               <span className="text-3xl font-black text-blue-900">
+                                                   {latestResponse.score}
+                                                   <span className="text-base font-semibold text-gray-500 ml-1">/ 10</span>
+                                               </span>
+                                               <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                                                   latestResponse.score >= 8 ? 'bg-green-100 text-green-700' :
+                                                   latestResponse.score >= 6 ? 'bg-blue-100 text-blue-700' :
+                                                   'bg-yellow-100 text-yellow-700'
+                                               }`}>
+                                                   {latestResponse.score >= 8 ? 'High Distinction' : latestResponse.score >= 6 ? 'Qualified' : 'Evaluated'}
+                                               </span>
+                                           </div>
+                                       ) : (
+                                           <p className="text-sm text-gray-600 font-medium">Score is currently being finalized.</p>
+                                       )}
+
+                                       <p className="text-xs text-gray-600 mt-2 font-medium">
+                                           {user.examStatus === 'INTERVIEW' ? '✨ Great job! You have been shortlisted for the Interview round.' :
+                                            user.examStatus === 'HIRED' ? '🎉 Congratulations! You have been selected for this position.' :
+                                            user.examStatus === 'REJECTED' ? 'Application not shortlisted at this stage.' :
+                                            'Assessment recorded. Your profile is being reviewed by the selection panel.'}
+                                       </p>
                                    </div>
                                )}
                              </>

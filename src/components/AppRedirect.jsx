@@ -18,11 +18,13 @@ export default function AppRedirect({ children }) {
   useEffect(() => {
     // Check if the current route is allowed in browser
     if (pathname && (
-      pathname.startsWith('/admin') || 
+      pathname.startsWith('/admin') ||
       pathname.startsWith('/reset-password') ||
       pathname.startsWith('/login') ||
       pathname.startsWith('/dashboard') ||
-      pathname.startsWith('/exam')
+      pathname.startsWith('/exam') ||
+      pathname.startsWith('/patients')
+
     )) {
       setStatus("app");
       return;
